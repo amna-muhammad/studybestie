@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Create Account - StudyBestie</title>
+
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Indie+Flower&display=swap" rel="stylesheet">
+
+<style>
+body{
+font-family:'Quicksand',sans-serif;
+background:#fff5f8;
+background-image:
+radial-gradient(#ffafcc 0.8px,transparent 0.8px),
+radial-gradient(#a2d2ff 0.8px,#fff5f8 0.8px);
+background-size:24px 24px;
+background-position:0 0,12px 12px;
+}
+
+.glass{
+background:rgba(255,255,255,0.85);
+backdrop-filter:blur(10px);
+border:3px solid white;
+border-radius:30px;
+box-shadow:0 10px 25px rgba(255,175,204,0.2);
+}
+
+.btn-cute{
+background:#ffafcc;
+color:white;
+border-bottom:5px solid rgba(0,0,0,0.1);
+transition:all .2s;
+}
+
+.btn-cute:hover{ transform:translateY(-2px); }
+.btn-cute:active{ transform:translateY(2px); border-bottom-width:2px; }
+
+.small-help{ font-size:11px; color:#7fa9d1; font-weight:700; }
+</style>
+</head>
+
+<body class="flex items-center justify-center min-h-screen p-4">
+
+<div class="glass w-full max-w-md p-10">
+
+  <div class="text-center mb-8">
+    <div class="text-5xl mb-2">🎀</div>
+    <h1 class="text-3xl font-black text-pink-400">Create Account</h1>
+    <p class="text-sm text-blue-400 font-semibold">Join StudyBestie ✨</p>
+  </div>
+
+  <form id="create-form" class="space-y-4">
+    <input id="firstName" type="text" placeholder="First Name"
+      class="w-full p-4 rounded-2xl border-2 border-pink-100 bg-white focus:outline-none font-semibold" required />
+
+    <div class="flex items-center gap-4">
+      <label class="flex items-center gap-2">
+        <input type="radio" name="contactType" value="email" checked class="accent-pink-400" />
+        <span class="font-semibold text-gray-700">Email</span>
+      </label>
+      <label class="flex items-center gap-2">
+        <input type="radio" name="contactType" value="phone" class="accent-pink-400" />
+        <span class="font-semibold text-gray-700">Phone</span>
+      </label>
+    </div>
+
+    <input id="contact" type="text" placeholder="Email or Phone Number"
+      class="w-full p-4 rounded-2xl border-2 border-pink-100 bg-white focus:outline-none font-semibold" required />
+
+    <input id="password" type="password" placeholder="Password"
+      class="w-full p-4 rounded-2xl border-2 border-pink-100 bg-white focus:outline-none font-semibold" required />
+
+    <div class="small-help">
+      Password must be 8+ characters and include 1 special character (like ! @ # $).
+    </div>
+
+    <button type="submit" class="w-full py-4 rounded-2xl font-bold btn-cute">Continue 🎉</button>
+  </form>
+
+  <p class="text-xs text-center text-gray-400 mt-6">
+    Already have an account? <a href="index.html" class="text-pink-400 underline">Login</a>
+  </p>
+
+</div>
+
+<script>
+function normalizeContact(contactType, val){
+  const v = (val || '').trim();
+  if(!v) return '';
+  if(contactType === 'email') return v.toLowerCase();
+  return v.replace(/\D/g,''); // phone digits only
+}
+
+function isValidEmail(v){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+}
+
+function isValidPassword(pw){
+  if(!pw || pw.length < 8) return false;
+  return /[!@#$%^&*()_\-+=\[\]{};:'",.<>\/?\\|`~]/.test(pw);
+}
+
+document.getElementById('create-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const firstName = document.getElementById('firstName').value.trim();
+  const contactType = document.querySelector('input[name="contactType"]:checked').value;
+  const rawContact = document.getElementById('contact').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!firstName || !rawContact || !password) {
+    alert('Please fill all fields');
+    return;
+  }
+
+  if(!isValidPassword(password)){
+    alert('Password must be at least 8 characters and include 1 special character.');
+    return;
+  }
+
+  const contact = normalizeContact(contactType, rawContact);
+
+  if(contactType === 'email'){
+    if(!isValidEmail(contact)){
+      alert('Please enter a valid email address.');
+      return;
+    }
+  } else {
+    if(contact.length < 10){
+      alert('Please enter a valid phone number (at least 10 digits).');
+      return;
+    }
+  }
+
+  const accounts = JSON.parse(localStorage.getItem('studyBestie_accounts') || '[]');
+
+  const exists = accounts.some(a =>
+    (contactType === 'email' && a.email && a.email.toLowerCase() === contact) ||
+    (contactType === 'phone' && a.phone && a.phone.replace(/\D/g,'') === contact)
+  );
+
+  if(exists){
+    alert('An account with that email/phone already exists. Please login.');
+    window.location.href = 'index.html';
+    return;
+  }
+
+  // create account
+  const newAccount = {
+    name: firstName,
+    email: contactType === 'email' ? contact : '',
+    phone: contactType === 'phone' ? contact : '',
+    password
+  };
+  accounts.push(newAccount);
+  localStorage.setItem('studyBestie_accounts', JSON.stringify(accounts));
+
+  // set session
+  localStorage.setItem('studyBestie_session', JSON.stringify({
+    name: firstName,
+    email: newAccount.email,
+    phone: newAccount.phone
+  }));
+
+  window.location.href = 'dashboard.html';
+});
+</script>
+
+</body>
+</html>

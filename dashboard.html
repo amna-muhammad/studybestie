@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>StudyBestie | Dashboard</title>
+
+  <!-- Protect dashboard -->
+  <script>
+    if (!localStorage.getItem("studyBestie_session")) {
+      window.location.href = "index.html";
+    }
+  </script>
+
+  <script>
+    tailwind = {
+      config: {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: {
+              quick: ['Quicksand', 'sans-serif'],
+              indie: ['Indie Flower', 'cursive'],
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Indie+Flower&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#fff5f8;
+      --pink:#ffafcc;
+      --blue:#a2d2ff;
+      --text:#5f4b66;
+      --card:rgba(255,255,255,0.82);
+      --shadow:rgba(255,175,204,0.22);
+    }
+
+    body{
+      font-family:'Quicksand',sans-serif;
+      background-color:var(--bg);
+      color:var(--text);
+      background-image:
+        radial-gradient(var(--pink) 0.85px, transparent 0.85px),
+        radial-gradient(var(--blue) 0.85px, var(--bg) 0.85px);
+      background-size:24px 24px;
+      background-position:0 0, 12px 12px;
+    }
+
+    .glass{
+      background:var(--card);
+      backdrop-filter:blur(10px);
+      border:3px solid rgba(255,255,255,0.95);
+      border-radius:28px;
+      box-shadow:0 12px 28px var(--shadow);
+    }
+
+    .btn-cute{
+      transition:all 0.2s;
+      border-bottom:5px solid rgba(0,0,0,0.10);
+      background-color:var(--pink);
+      color:white;
+    }
+    .btn-cute:hover{ filter:brightness(1.05); transform:translateY(-2px); }
+    .btn-cute:active{ transform:translateY(2px); border-bottom-width:2px; }
+
+    .floating{ animation:float 4s ease-in-out infinite; }
+    @keyframes float{
+      0%{ transform:translateY(0px) rotate(0deg); }
+      50%{ transform:translateY(-8px) rotate(1deg); }
+      100%{ transform:translateY(0px) rotate(0deg); }
+    }
+
+    .tab-btn.active{
+      background:rgba(255,175,204,0.25);
+      border-color:rgba(255,175,204,0.75);
+    }
+
+    ::-webkit-scrollbar{ width:10px; }
+    ::-webkit-scrollbar-track{ background:rgba(255,255,255,0.3); }
+    ::-webkit-scrollbar-thumb{ background:var(--pink); border-radius:10px; border:2px solid rgba(255,255,255,0.35); }
+
+    /* Flashcard flip */
+    .flashcard-inner{ transition:transform 0.6s; transform-style:preserve-3d; }
+    .flashcard.flipped .flashcard-inner{ transform:rotateY(180deg); }
+    .flashcard-front,.flashcard-back{ backface-visibility:hidden; border-radius:20px; }
+    .flashcard-back{ transform:rotateY(180deg); }
+
+    html.dark body{
+      background-color:#0b0b10;
+      background-image:
+        radial-gradient(rgba(255,175,204,0.35) 0.85px, transparent 0.85px),
+        radial-gradient(rgba(162,210,255,0.35) 0.85px, #0b0b10 0.85px);
+    }
+    html.dark :root{
+      --bg:#0b0b10;
+      --text:#efe7f1;
+      --card:rgba(20,20,28,0.72);
+      --shadow:rgba(0,0,0,0.55);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen p-4 md:p-8">
+
+  <!-- HEADER -->
+  <header class="max-w-6xl mx-auto mb-6">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="text-center md:text-left">
+        <h1 class="text-4xl font-bold text-[#ff85a1] flex items-center justify-center md:justify-start gap-2">
+          <span class="text-5xl floating">🎀</span> StudyBestie
+        </h1>
+        <p class="text-xl text-[#b08ba5]" style="font-family:'Indie Flower', cursive;">
+          your aesthetic productivity dashboard ✨
+        </p>
+      </div>
+
+      <div class="glass px-6 py-4 flex flex-wrap items-center justify-center gap-4">
+        <div class="text-center">
+          <div id="clock" class="text-2xl font-black text-[#ff85a1]">00:00:00</div>
+          <div id="greeting" class="text-xs font-black uppercase tracking-widest text-[#7fa9d1]">hi bestie 💖</div>
+        </div>
+
+        <div class="w-px h-10 bg-[#ffc8dd] hidden md:block"></div>
+
+        <div class="flex items-center gap-2">
+          <button id="dark-toggle" class="px-4 py-2 rounded-2xl bg-white/70 border-2 border-white hover:scale-105 transition font-black text-sm">
+            🌙 Dark
+          </button>
+          <button onclick="logout()" class="px-4 py-2 rounded-2xl bg-white/70 border-2 border-white hover:scale-105 transition font-black text-sm">
+            🚪 Logout
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <nav class="mt-5 glass px-4 py-3">
+      <div class="flex flex-wrap gap-2 justify-center md:justify-start">
+        <button class="tab-btn active px-4 py-2 rounded-2xl border-2 border-white font-black text-sm" onclick="showTab('dashboard')">🏠 Dashboard</button>
+        <button class="tab-btn px-4 py-2 rounded-2xl border-2 border-white font-black text-sm" onclick="showTab('planner')">📅 Planner</button>
+        <button class="tab-btn px-4 py-2 rounded-2xl border-2 border-white font-black text-sm" onclick="showTab('tools')">🧰 Tools</button>
+        <a href="networking.html" class="bg-blue-200 px-4 py-2 rounded-xl font-bold">
+🌐 Networking Concepts
+</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- MAIN -->
+  <main class="max-w-6xl mx-auto">
+
+    <!-- DASHBOARD -->
+    <section id="tab-dashboard">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+
+        <!-- Left -->
+        <div class="md:col-span-4 space-y-6">
+
+          <!-- Pomodoro -->
+          <section class="glass p-6 text-center">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-xl font-black flex items-center gap-2 text-[#7fa9d1]">
+                ⏱️ Focus Timer
+              </h3>
+              <span id="session-label" class="text-[10px] font-black uppercase tracking-widest bg-white/60 px-3 py-1 rounded-full">
+                Session: Focus
+              </span>
+            </div>
+
+            <div class="text-6xl font-black mb-6 text-[#ff85a1]" id="timer-display">25:00</div>
+
+            <div class="flex justify-center gap-2 mb-6">
+              <button onclick="setTimerMode('focus', false)" class="px-4 py-1.5 rounded-full text-xs font-black bg-[#ffebf0] text-[#ff85a1] hover:bg-[#ffcfdb] transition">Focus 🎀</button>
+              <button onclick="setTimerMode('break', true)" class="px-4 py-1.5 rounded-full text-xs font-black bg-[#e3f2fd] text-[#7fa9d1] hover:bg-[#c5e1f5] transition">Break 🍦</button>
+              <button onclick="setTimerMode('long', true)" class="px-4 py-1.5 rounded-full text-xs font-black bg-[#f3e5f5] text-[#b08ba5] hover:bg-[#e1bee7] transition">Long Break 🧸</button>
+            </div>
+
+            <div class="flex gap-3">
+              <button id="timer-btn" onclick="toggleTimer()" class="flex-1 py-4 rounded-2xl font-black text-lg btn-cute shadow-lg">
+                Start Study ☁️
+              </button>
+              <button onclick="resetTimer()" class="px-5 py-4 bg-white/70 border-2 border-white rounded-2xl hover:scale-105 transition text-xl">
+                🔄
+              </button>
+            </div>
+
+            <div class="mt-5 text-left">
+              <div class="flex items-center justify-between text-xs font-black uppercase tracking-widest text-[#b08ba5]">
+                <span>Today Focus</span>
+                <span id="today-focus">0 min</span>
+              </div>
+              <div class="w-full h-2 bg-white/70 rounded-full overflow-hidden mt-2">
+                <div id="today-focus-bar" class="h-full bg-[#a2d2ff] transition-all duration-500" style="width:0%"></div>
+              </div>
+              <p class="mt-3 text-[11px] font-semibold text-[#7fa9d1] italic">
+                Break starts automatically when you click it 💖
+              </p>
+            </div>
+          </section>
+
+          <!-- Flashcards -->
+          <section class="glass p-6 overflow-hidden">
+            <h3 class="text-xl font-black mb-4 flex items-center gap-2 text-[#b08ba5]">
+              📖 Notecards
+            </h3>
+
+            <div id="flashcard-container" class="relative h-48 w-full cursor-pointer flashcard" onclick="this.classList.toggle('flipped')">
+              <div class="flashcard-inner absolute inset-0 w-full h-full text-center">
+
+                <div class="flashcard-front glass absolute inset-0 flex flex-col items-center justify-center p-4 bg-white/70 border-[#ffafcc] border-dashed border-2">
+                  <span class="text-[10px] uppercase font-black tracking-widest text-[#ffafcc] mb-2">Front</span>
+                  <p id="card-front-text" class="text-lg font-black">Add your first notecard 🎀</p>
+                  <p class="text-[10px] text-gray-400 mt-4 italic">Tap to flip ✨</p>
+                </div>
+
+                <div class="flashcard-back glass absolute inset-0 flex flex-col items-center justify-center p-4 bg-[#f0f9ff]/70 border-[#a2d2ff] border-2">
+                  <span class="text-[10px] uppercase font-black tracking-widest text-[#7fa9d1] mb-2">Back</span>
+                  <p id="card-back-text" class="text-lg font-black italic">Click “Edit Cards” to create one 🍭</p>
+                </div>
+
+              </div>
+            </div>
+
+            <div class="flex justify-between items-center mt-4 px-2">
+              <button onclick="prevCard()" class="text-sm font-black text-[#ff85a1] hover:scale-110 transition"> Prev</button>
+              <span id="card-count" class="text-[10px] font-black text-[#b08ba5] bg-white/70 px-3 py-1 rounded-full shadow-sm">0 / 0</span>
+              <button onclick="nextCard()" class="text-sm font-black text-[#ff85a1] hover:scale-110 transition">Next </button>
+            </div>
+
+            <button onclick="openFlashcardModal()" class="w-full mt-4 text-[10px] font-black text-[#7fa9d1] border-2 border-dashed border-[#a2d2ff] py-2 rounded-xl hover:bg-[#f0f9ff]/60 transition uppercase tracking-widest">
+              Edit Cards 🎀
+            </button>
+          </section>
+        </div>
+
+        <!-- Middle -->
+        <div class="md:col-span-5">
+          <section class="glass p-8 h-full flex flex-col">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-2xl font-black flex items-center gap-3 text-[#ff85a1]">
+                📝 Goal List
+              </h3>
+              <div class="flex flex-col items-end">
+                <span id="task-progress" class="text-xs font-black text-[#7fa9d1] uppercase tracking-tighter">0% Completed</span>
+                <div class="w-24 h-2 bg-white/70 rounded-full mt-1 overflow-hidden">
+                  <div id="progress-bar" class="h-full bg-[#a2d2ff] transition-all duration-500" style="width: 0%"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex gap-2 mb-4">
+              <input type="text" id="task-input" placeholder="Add a new goal, bestie..."
+                class="flex-1 bg-white/70 border-2 border-white rounded-2xl px-5 py-3 focus:outline-none focus:border-[#ffafcc] shadow-inner font-semibold">
+              <select id="task-tag" class="bg-white/70 border-2 border-white rounded-2xl px-4 py-3 font-black text-sm">
+                <option value="School">School 🎓</option>
+                <option value="Work">Work 💼</option>
+                <option value="Self">Self 🌸</option>
+              </select>
+              <button onclick="addTask()" class="px-6 py-3 bg-[#a2d2ff] text-white rounded-2xl font-black text-xl hover:scale-105 transition shadow-lg">＋</button>
+            </div>
+
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex gap-2">
+                <button onclick="setTaskFilter('all')" class="px-4 py-2 rounded-2xl bg-white/70 border-2 border-white font-black text-xs hover:scale-105 transition" id="filter-all">All</button>
+                <button onclick="setTaskFilter('active')" class="px-4 py-2 rounded-2xl bg-white/70 border-2 border-white font-black text-xs hover:scale-105 transition" id="filter-active">Active</button>
+                <button onclick="setTaskFilter('done')" class="px-4 py-2 rounded-2xl bg-white/70 border-2 border-white font-black text-xs hover:scale-105 transition" id="filter-done">Done</button>
+              </div>
+
+              <button onclick="clearCompleted()" class="px-4 py-2 rounded-2xl bg-white/70 border-2 border-white font-black text-xs hover:scale-105 transition">
+                Clear done ✖
+              </button>
+            </div>
+
+            <div id="task-list" class="flex-1 space-y-4 overflow-y-auto max-h-[520px] pr-2"></div>
+
+            <div class="mt-8 p-5 bg-[#fff0f3]/70 rounded-3xl border-2 border-white shadow-sm flex items-center gap-4">
+              <span class="text-3xl">🧸</span>
+              <p class="text-sm italic text-[#b08ba5] font-semibold leading-relaxed">
+                “Empty list = fresh start. Add your first goal and let’s slay.” ✨
+              </p>
+            </div>
+          </section>
+        </div>
+
+        <!-- Right -->
+        <div class="md:col-span-3 space-y-6">
+
+          <!-- Notes -->
+          <section class="glass p-6 flex flex-col h-[380px]">
+            <h3 class="text-xl font-black mb-4 flex items-center gap-2 text-[#b08ba5]">
+              ⭐ Scratchpad
+            </h3>
+            <textarea id="notes" placeholder="Type your cute thoughts here..."
+              class="w-full flex-1 bg-transparent resize-none focus:outline-none text-xl leading-relaxed"
+              style="font-family:'Indie Flower', cursive;"
+              oninput="saveNotes()"></textarea>
+            <div class="mt-2 text-[9px] font-black text-[#ffafcc] uppercase tracking-widest text-right">Auto-saving… ✨</div>
+          </section>
+
+          <!-- Sounds -->
+          <section class="glass p-6">
+            <h3 class="text-xl font-black mb-4 flex items-center gap-2 text-[#7fa9d1]">
+              🎧 Study Vibes
+            </h3>
+
+            <div class="grid grid-cols-2 gap-3">
+              <button onclick="toggleAudio('rain')" id="btn-rain" class="p-4 bg-[#f0f9ff]/70 rounded-2xl hover:scale-105 transition flex flex-col items-center gap-2 border-2 border-white shadow-sm">
+                <span class="text-3xl">🌧️</span><span class="text-[10px] font-black uppercase text-[#7fa9d1]">Rainy</span>
+              </button>
+              <button onclick="toggleAudio('fire')" id="btn-fire" class="p-4 bg-[#fff1f2]/70 rounded-2xl hover:scale-105 transition flex flex-col items-center gap-2 border-2 border-white shadow-sm">
+                <span class="text-3xl">🔥</span><span class="text-[10px] font-black uppercase text-[#ff85a1]">Cozy</span>
+              </button>
+              <button onclick="toggleAudio('cafe')" id="btn-cafe" class="p-4 bg-[#fffbeb]/70 rounded-2xl hover:scale-105 transition flex flex-col items-center gap-2 border-2 border-white shadow-sm">
+                <span class="text-3xl">🧁</span><span class="text-[10px] font-black uppercase text-[#d97706]">Cafe</span>
+              </button>
+              <button onclick="toggleAudio('birds')" id="btn-birds" class="p-4 bg-[#f0fdf4]/70 rounded-2xl hover:scale-105 transition flex flex-col items-center gap-2 border-2 border-white shadow-sm">
+                <span class="text-3xl">🦄</span><span class="text-[10px] font-black uppercase text-[#16a34a]">Forest</span>
+              </button>
+            </div>
+
+            <div class="mt-5 glass p-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-black uppercase tracking-widest text-[#b08ba5]">Volume</span>
+                <span id="vol-label" class="text-xs font-black text-[#7fa9d1]">70%</span>
+              </div>
+              <input id="vol" type="range" min="0" max="100" value="70" class="w-full mt-3" oninput="setVolume(this.value)"/>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- PLANNER -->
+    <section id="tab-planner" class="hidden">
+      <div class="glass p-8">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+          <div>
+            <h2 class="text-3xl font-black text-[#ff85a1] flex items-center gap-2"><span>📅</span> Planner</h2>
+            <p class="text-sm font-semibold text-[#7fa9d1]">Plan your day like a cute timeline 💗</p>
+          </div>
+          <div class="flex gap-2 flex-wrap">
+            <input id="plan-time" type="time" class="bg-white/70 border-2 border-white rounded-2xl px-4 py-3 font-black text-sm"/>
+            <input id="plan-text" type="text" placeholder="What are we doing, bestie?"
+              class="flex-1 bg-white/70 border-2 border-white rounded-2xl px-4 py-3 font-semibold min-w-[220px]"/>
+            <button onclick="addPlanItem()" class="px-6 py-3 bg-[#a2d2ff] text-white rounded-2xl font-black hover:scale-105 transition">Add ✨</button>
+          </div>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          <div class="glass p-6">
+            <h3 class="text-xl font-black text-[#b08ba5] mb-4">Today’s Timeline</h3>
+            <div id="plan-list" class="space-y-3 max-h-[520px] overflow-y-auto pr-2"></div>
+          </div>
+
+          <div class="glass p-6">
+            <h3 class="text-xl font-black text-[#b08ba5] mb-4">Quick Templates</h3>
+
+            <div class="space-y-3">
+              <button onclick="applyTemplate('midterm')" class="w-full text-left p-4 rounded-2xl bg-white/70 border-2 border-white hover:scale-[1.01] transition">
+                <div class="font-black text-[#ff85a1]">Midterm Day 💀🎀</div>
+                <div class="text-xs font-semibold text-[#7fa9d1]">Focus blocks + breaks</div>
+              </button>
+
+              <button onclick="applyTemplate('soft')" class="w-full text-left p-4 rounded-2xl bg-white/70 border-2 border-white hover:scale-[1.01] transition">
+                <div class="font-black text-[#ff85a1]">Soft Girl Study Day ☁️🧸</div>
+                <div class="text-xs font-semibold text-[#7fa9d1]">Light tasks + self care</div>
+              </button>
+
+              <button onclick="applyTemplate('work')" class="w-full text-left p-4 rounded-2xl bg-white/70 border-2 border-white hover:scale-[1.01] transition">
+                <div class="font-black text-[#ff85a1]">Work + Study Balance 💼📚</div>
+                <div class="text-xs font-semibold text-[#7fa9d1]">Work shift + study sessions</div>
+              </button>
+            </div>
+
+            <button onclick="clearPlanner()" class="w-full mt-5 py-3 rounded-2xl bg-white/70 border-2 border-white font-black text-[#ff85a1] hover:scale-105 transition">
+              Clear today’s planner 🧼
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOOLS -->
+    <section id="tab-tools" class="hidden">
+      <div class="glass p-8">
+        <h2 class="text-3xl font-black text-[#ff85a1] flex items-center gap-2"><span>🧰</span> Tools</h2>
+        <p class="text-sm font-semibold text-[#7fa9d1] mt-1">Small extras that make this feel like a full app ✨</p>
+
+        <div class="grid md:grid-cols-2 gap-6 mt-6">
+          <div class="glass p-6">
+            <h3 class="text-xl font-black text-[#b08ba5]">Motivate Me ✨</h3>
+            <p class="text-sm font-semibold text-[#7fa9d1] mt-1">Instant energy.</p>
+            <button onclick="motivateMe()" class="w-full mt-4 py-4 rounded-2xl btn-cute font-black text-lg shadow-lg">Give me motivation 💖</button>
+            <p id="motivation" class="mt-4 text-lg font-bold" style="font-family:'Indie Flower', cursive;"></p>
+          </div>
+
+          <div class="glass p-6">
+            <h3 class="text-xl font-black text-[#b08ba5]">Quick Links</h3>
+            <div class="grid grid-cols-2 gap-3 mt-4">
+              <a class="p-4 rounded-2xl bg-white/70 border-2 border-white font-black text-sm hover:scale-105 transition text-center" href="https://pomofocus.io" target="_blank">Pomofocus</a>
+              <a class="p-4 rounded-2xl bg-white/70 border-2 border-white font-black text-sm hover:scale-105 transition text-center" href="https://quizlet.com" target="_blank">Quizlet</a>
+              <a class="p-4 rounded-2xl bg-white/70 border-2 border-white font-black text-sm hover:scale-105 transition text-center" href="https://docs.google.com" target="_blank">Google Docs</a>
+              <a class="p-4 rounded-2xl bg-white/70 border-2 border-white font-black text-sm hover:scale-105 transition text-center" href="https://www.notion.so" target="_blank">Notion</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 p-6 rounded-3xl bg-[#fff0f3]/70 border-2 border-white">
+          <div class="font-black text-[#ff85a1]">Reset (demo)</div>
+          <div class="text-sm font-semibold text-[#7fa9d1] mt-1">
+            If you want a fresh start for presenting, use the button below.
+          </div>
+          <button onclick="wipeAppData()" class="mt-4 w-full py-3 rounded-2xl bg-white/70 border-2 border-white font-black text-[#ff85a1] hover:scale-105 transition">
+            Wipe app data (tasks/notes/cards/planner) 🧼
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Flashcard Modal -->
+  <div id="flashcard-modal" class="fixed inset-0 bg-pink-100/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+    <div class="glass max-w-md w-full p-8 relative border-4 border-[#ffafcc]">
+      <button onclick="closeFlashcardModal()" class="absolute top-4 right-4 text-3xl font-black text-[#ff85a1]">×</button>
+      <h2 class="text-2xl font-black mb-6 text-[#ff85a1] flex items-center gap-2">
+        <span>🎀</span> Card Editor
+      </h2>
+
+      <div class="space-y-4 mb-6">
+        <input type="text" id="fc-front-input" placeholder="Front: Question 🌸"
+          class="w-full bg-white/70 border-2 border-white rounded-2xl p-4 focus:outline-none focus:border-[#ffafcc] font-black">
+        <input type="text" id="fc-back-input" placeholder="Back: Answer 🍭"
+          class="w-full bg-white/70 border-2 border-white rounded-2xl p-4 focus:outline-none focus:border-[#ffafcc] font-black">
+      </div>
+
+      <button onclick="addFlashcard()" class="w-full py-4 bg-[#ffafcc] text-white rounded-2xl font-black text-lg btn-cute shadow-lg">
+        Save New Card ✨
+      </button>
+
+      <div id="fc-list" class="mt-6 max-h-48 overflow-y-auto space-y-2 border-t border-white/60 pt-4"></div>
+    </div>
+  </div>
+
+  <!-- Audio -->
+  <audio id="audio-rain" loop src="https://www.soundjay.com/nature/rain-07.mp3"></audio>
+  <audio id="audio-fire" loop src="https://www.soundjay.com/nature/fire-crackling-01.mp3"></audio>
+  <audio id="audio-cafe" loop src="https://www.soundjay.com/misc/coffee-shop-1.mp3"></audio>
+  <audio id="audio-birds" loop src="https://www.soundjay.com/nature/sounds/birds-chirping-7.mp3"></audio>
+
+  <!-- Toast -->
+  <div id="message-box" class="fixed bottom-8 left-1/2 -translate-x-1/2 glass px-8 py-4 transform translate-y-32 transition-transform duration-500 z-[100] text-center border-4 border-[#ffafcc]">
+    <span id="message-text" class="font-black text-[#ff85a1]">Message here... ✨</span>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/auth.js"></script>
+
+  <script>
+    /* ---------------- Keys ---------------- */
+    const K = {
+      tasks: 'studyBestie_tasks',
+      notes: 'studyBestie_notes',
+      cards: 'studyBestie_cards',
+      planner: 'studyBestie_planner',
+      stats: 'studyBestie_stats',
+      settings: 'studyBestie_settings',
+      ui: 'studyBestie_ui'
+    };
+
+    const readJSON = (key, fallback) => {
+      try { return JSON.parse(localStorage.getItem(key)) ?? fallback; }
+      catch { return fallback; }
+    };
+    const writeJSON = (key, obj) => localStorage.setItem(key, JSON.stringify(obj));
+    const todayKey = () => new Date().toISOString().slice(0,10);
+    const clamp = (n,a,b) => Math.max(a, Math.min(b,n));
+
+    function escapeHTML(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    function showMessage(text){
+      const box = document.getElementById('message-box');
+      document.getElementById('message-text').innerText = text;
+      box.classList.remove('translate-y-32');
+      setTimeout(() => box.classList.add('translate-y-32'), 3000);
+    }
+
+    /* ---------------- Tabs ---------------- */
+    function showTab(name){
+      ['dashboard','planner','tools'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.toggle('hidden', t !== name);
+      });
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      const map = { dashboard:0, planner:1, tools:2 };
+      document.querySelectorAll('.tab-btn')[map[name]].classList.add('active');
+      if (name === 'planner') renderPlanner();
+    }
+
+    /* ---------------- Dark mode ---------------- */
+    let ui = readJSON(K.ui, { dark:false });
+
+    function applyDarkMode(){
+      document.documentElement.classList.toggle('dark', !!ui.dark);
+      document.getElementById('dark-toggle').innerText = ui.dark ? '☀️ Light' : '🌙 Dark';
+    }
+
+    document.getElementById('dark-toggle').addEventListener('click', () => {
+      ui.dark = !ui.dark;
+      writeJSON(K.ui, ui);
+      applyDarkMode();
+    });
+
+    /* ---------------- Clock + Greeting ---------------- */
+    function updateClock(){
+      const now = new Date();
+      document.getElementById('clock').innerText = now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+      updateGreeting();
+    }
+
+    function updateGreeting(){
+      let name = 'Bestie';
+      try{
+        const s = JSON.parse(localStorage.getItem('studyBestie_session') || 'null');
+        if (s && s.name) name = s.name;
+      } catch {}
+
+      const h = new Date().getHours();
+      let g = `Hii, ${name}! 💖`;
+      if (h < 12) g = `Good morning, ${name}! 🌅🎀`;
+      else if (h < 18) g = `Good afternoon, ${name}! ☀️🧁`;
+      else g = `Late night grind, ${name}? 🌙🧸`;
+      document.getElementById('greeting').innerText = g;
+    }
+
+    /* ---------------- Settings ---------------- */
+    let settings = readJSON(K.settings, { dailyFocusGoalMin:120, volume:70 });
+    function setVolume(v){
+      settings.volume = clamp(parseInt(v,10) || 70, 0, 100);
+      writeJSON(K.settings, settings);
+      document.getElementById('vol-label').innerText = `${settings.volume}%`;
+      document.querySelectorAll('audio').forEach(a => a.volume = settings.volume/100);
+    }
+
+    /* ---------------- Tasks ---------------- */
+    let taskFilter = 'all';
+    let tasks = readJSON(K.tasks, []); // starts EMPTY
+
+    function setTaskFilter(f){
+      taskFilter = f;
+      renderTasks();
+    }
+
+    function filteredTasks(){
+      if (taskFilter === 'active') return tasks.filter(t => !t.completed);
+      if (taskFilter === 'done') return tasks.filter(t => t.completed);
+      return tasks;
+    }
+
+    function renderTasks(){
+      document.getElementById('filter-all').classList.toggle('ring-4', taskFilter==='all');
+      document.getElementById('filter-active').classList.toggle('ring-4', taskFilter==='active');
+      document.getElementById('filter-done').classList.toggle('ring-4', taskFilter==='done');
+
+      const list = document.getElementById('task-list');
+      list.innerHTML = '';
+
+      if (!tasks.length){
+        list.innerHTML = `
+          <div class="p-6 rounded-3xl bg-white/60 border-2 border-white">
+            <div class="font-black text-[#ff85a1]">No goals yet 🎀</div>
+            <div class="text-sm font-semibold text-[#7fa9d1] mt-1">Add your first goal above.</div>
+          </div>
+        `;
+        document.getElementById('task-progress').innerText = `0% Completed`;
+        document.getElementById('progress-bar').style.width = `0%`;
+        writeJSON(K.tasks, tasks);
+        return;
+      }
+
+      const arr = filteredTasks();
+
+      arr.forEach(task => {
+        const div = document.createElement('div');
+        div.className = `flex items-center gap-4 p-4 rounded-2xl bg-white/70 shadow-sm hover:shadow-md transition-all ${task.completed ? 'opacity-60 grayscale' : ''}`;
+
+        div.innerHTML = `
+          <input type="checkbox" ${task.completed ? 'checked' : ''} class="w-6 h-6 accent-[#ffafcc] cursor-pointer rounded-full">
+          <div class="flex-1">
+            <div class="font-black ${task.completed ? 'line-through text-gray-400' : 'text-[#5f4b66]'}">${escapeHTML(task.text)}</div>
+            <div class="mt-1 text-[10px] font-black uppercase tracking-widest text-[#7fa9d1]">${escapeHTML(task.tag)}</div>
+          </div>
+          <button class="text-gray-300 hover:text-[#ff85a1] transition text-xl font-black">×</button>
+        `;
+
+        div.querySelector('input').addEventListener('change', () => toggleTask(task.id));
+        div.querySelector('button').addEventListener('click', () => deleteTask(task.id));
+        list.appendChild(div);
+      });
+
+      const completedCount = tasks.filter(t => t.completed).length;
+      const progress = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;
+      document.getElementById('task-progress').innerText = `${progress}% Completed`;
+      document.getElementById('progress-bar').style.width = `${progress}%`;
+
+      writeJSON(K.tasks, tasks);
+    }
+
+    function addTask(){
+      const input = document.getElementById('task-input');
+      const tag = document.getElementById('task-tag').value || 'School';
+      const text = input.value.trim();
+      if (!text) return;
+
+      tasks.unshift({ id: Date.now(), text: text, tag: tag, completed:false });
+      input.value = '';
+      writeJSON(K.tasks, tasks);
+      renderTasks();
+      showMessage("Goal added ✨");
+    }
+
+    function toggleTask(id){
+      tasks = tasks.map(t => t.id===id ? {...t, completed:!t.completed} : t);
+      writeJSON(K.tasks, tasks);
+      renderTasks();
+    }
+
+    function deleteTask(id){
+      tasks = tasks.filter(t => t.id!==id);
+      writeJSON(K.tasks, tasks);
+      renderTasks();
+    }
+
+    function clearCompleted(){
+      tasks = tasks.filter(t => !t.completed);
+      writeJSON(K.tasks, tasks);
+      renderTasks();
+      showMessage("Cleared done goals ✨");
+    }
+
+    /* ---------------- Notes ---------------- */
+    function saveNotes(){
+      writeJSON(K.notes, document.getElementById('notes').value);
+    }
+
+    /* ---------------- Flashcards ---------------- */
+    let flashcards = readJSON(K.cards, []); // starts EMPTY
+    let currentCardIndex = 0;
+
+    function updateFlashcard(){
+      if (!flashcards.length){
+        document.getElementById('card-front-text').innerText = "Add your first notecard 🎀";
+        document.getElementById('card-back-text').innerText = "Click “Edit Cards” to create one ✨";
+        document.getElementById('card-count').innerText = `0 / 0`;
+        document.getElementById('flashcard-container').classList.remove('flipped');
+        return;
+      }
+      const card = flashcards[currentCardIndex];
+      document.getElementById('card-front-text').innerText = card.front;
+      document.getElementById('card-back-text').innerText = card.back;
+      document.getElementById('card-count').innerText = `${currentCardIndex+1} / ${flashcards.length}`;
+      document.getElementById('flashcard-container').classList.remove('flipped');
+    }
+
+    function nextCard(){
+      if (!flashcards.length) return;
+      currentCardIndex = (currentCardIndex + 1) % flashcards.length;
+      updateFlashcard();
+    }
+
+    function prevCard(){
+      if (!flashcards.length) return;
+      currentCardIndex = (currentCardIndex - 1 + flashcards.length) % flashcards.length;
+      updateFlashcard();
+    }
+
+    function openFlashcardModal(){
+      document.getElementById('flashcard-modal').classList.remove('hidden');
+      renderFlashcardList();
+    }
+
+    function closeFlashcardModal(){
+      document.getElementById('flashcard-modal').classList.add('hidden');
+    }
+
+    function addFlashcard(){
+      const front = document.getElementById('fc-front-input').value.trim();
+      const back  = document.getElementById('fc-back-input').value.trim();
+      if (!front || !back) return;
+
+      flashcards.push({ front, back });
+      writeJSON(K.cards, flashcards);
+
+      document.getElementById('fc-front-input').value = '';
+      document.getElementById('fc-back-input').value = '';
+
+      renderFlashcardList();
+      updateFlashcard();
+      showMessage("Notecard saved 📖✨");
+    }
+
+    function deleteFlashcard(i){
+      flashcards.splice(i, 1);
+      if (currentCardIndex >= flashcards.length) currentCardIndex = 0;
+      writeJSON(K.cards, flashcards);
+      renderFlashcardList();
+      updateFlashcard();
+    }
+
+    function renderFlashcardList(){
+      const list = document.getElementById('fc-list');
+      list.innerHTML = '';
+
+      if (!flashcards.length){
+        list.innerHTML = `
+          <div class="text-xs font-black text-[#7fa9d1]">
+            No cards yet. Add one above ✨
+          </div>
+        `;
+        return;
+      }
+
+      flashcards.forEach((c, i) => {
+        const item = document.createElement('div');
+        item.className = "flex justify-between items-center bg-white/60 p-3 rounded-xl text-xs border border-white";
+        item.innerHTML = `
+          <span class="truncate pr-2 font-black text-[#b08ba5]">${escapeHTML(c.front)}</span>
+          <button class="text-[#ff85a1] font-black hover:scale-110 transition">Delete</button>
+        `;
+        item.querySelector('button').addEventListener('click', () => deleteFlashcard(i));
+        list.appendChild(item);
+      });
+    }
+
+    /* ---------------- Audio ---------------- */
+    async function toggleAudio(type){
+      const audio = document.getElementById(`audio-${type}`);
+      const btn = document.getElementById(`btn-${type}`);
+
+      if (audio.paused){
+        try{
+          audio.volume = settings.volume/100;
+          await audio.play();
+          btn.classList.add('ring-4','ring-[#ffafcc]','bg-[#ffebf0]');
+          showMessage(`${type[0].toUpperCase()+type.slice(1)} vibes on 🎧`);
+        } catch {
+          showMessage("Browser blocked audio. Click again after interacting 🙈");
+        }
+      } else {
+        audio.pause();
+        btn.classList.remove('ring-4','ring-[#ffafcc]','bg-[#ffebf0]');
+      }
+    }
+
+    /* ---------------- Planner ---------------- */
+    let planner = readJSON(K.planner, { date: todayKey(), items: [] });
+
+    function normalizePlanner(){
+      const t = todayKey();
+      if (planner.date !== t){
+        planner = { date: t, items: [] };
+        writeJSON(K.planner, planner);
+      }
+    }
+
+    function renderPlanner(){
+      normalizePlanner();
+      const list = document.getElementById('plan-list');
+      list.innerHTML = '';
+
+      if (!planner.items.length){
+        list.innerHTML = `
+          <div class="p-6 rounded-3xl bg-white/60 border-2 border-white">
+            <div class="font-black text-[#ff85a1]">No plans yet 🎀</div>
+            <div class="text-sm font-semibold text-[#7fa9d1] mt-1">Add a time + task to build your timeline.</div>
+          </div>
+        `;
+        return;
+      }
+
+      planner.items.forEach(it => {
+        const row = document.createElement('div');
+        row.className = `flex items-center gap-3 p-4 rounded-2xl bg-white/70 border-2 border-white ${it.done ? 'opacity-60 grayscale' : ''}`;
+        row.innerHTML = `
+          <input type="checkbox" class="w-5 h-5 accent-[#ffafcc]" ${it.done ? 'checked' : ''}>
+          <div class="w-20 font-black text-[#7fa9d1]">${escapeHTML(it.time)}</div>
+          <div class="flex-1 font-black ${it.done ? 'line-through text-gray-400' : 'text-[#5f4b66]'}">${escapeHTML(it.text)}</div>
+          <button class="text-xl font-black text-gray-300 hover:text-[#ff85a1]">×</button>
+        `;
+        row.querySelector('input').addEventListener('change', () => togglePlan(it.id));
+        row.querySelector('button').addEventListener('click', () => deletePlan(it.id));
+        list.appendChild(row);
+      });
+    }
+
+    function addPlanItem(){
+      normalizePlanner();
+      const time = document.getElementById('plan-time').value;
+      const text = document.getElementById('plan-text').value.trim();
+      if (!time || !text) return;
+
+      planner.items.push({ id: Date.now(), time, text, done:false });
+      planner.items.sort((a,b) => a.time.localeCompare(b.time));
+      writeJSON(K.planner, planner);
+      document.getElementById('plan-text').value = '';
+      renderPlanner();
+      showMessage("Added to planner ✨");
+    }
+
+    function togglePlan(id){
+      planner.items = planner.items.map(it => it.id===id ? {...it, done:!it.done} : it);
+      writeJSON(K.planner, planner);
+      renderPlanner();
+    }
+
+    function deletePlan(id){
+      planner.items = planner.items.filter(it => it.id!==id);
+      writeJSON(K.planner, planner);
+      renderPlanner();
+    }
+
+    function applyTemplate(type){
+      normalizePlanner();
+      const t = [];
+
+      if (type === 'midterm'){
+        t.push(
+          {time:'09:00', text:'Review notes', done:false},
+          {time:'09:30', text:'Focus session (25m)', done:false},
+          {time:'10:00', text:'Break + water', done:false},
+          {time:'10:15', text:'Practice problems', done:false}
+        );
+      } else if (type === 'soft'){
+        t.push(
+          {time:'10:00', text:'Light reading + notes', done:false},
+          {time:'10:30', text:'Focus session (25m)', done:false},
+          {time:'11:00', text:'Break + snack', done:false}
+        );
+      } else if (type === 'work'){
+        t.push(
+          {time:'08:30', text:'Work shift', done:false},
+          {time:'16:00', text:'Focus session (25m)', done:false},
+          {time:'16:40', text:'Homework', done:false}
+        );
+      }
+
+      planner.items = t.map((x,i)=>({ id:Date.now()+i, ...x }));
+      planner.items.sort((a,b)=>a.time.localeCompare(b.time));
+      writeJSON(K.planner, planner);
+      renderPlanner();
+      showMessage("Template applied 💖");
+    }
+
+    function clearPlanner(){
+      planner = { date: todayKey(), items: [] };
+      writeJSON(K.planner, planner);
+      renderPlanner();
+      showMessage("Planner cleared 🧼");
+    }
+
+    /* ---------------- Pomodoro Timer ---------------- */
+    let stats = readJSON(K.stats, { focusByDay:{} });
+
+    const modeMinutes = { focus:25, break:5, long:15 };
+    let mode = 'focus';
+    let timeLeft = modeMinutes[mode] * 60;
+    let timerId = null;
+    let isRunning = false;
+
+    function updateTimerDisplay(){
+      const m = Math.floor(timeLeft/60);
+      const s = timeLeft%60;
+      const display = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+      document.getElementById('timer-display').innerText = display;
+    }
+
+    function updateTodayFocusUI(){
+      const day = todayKey();
+      const focused = stats.focusByDay[day] || 0;
+      document.getElementById('today-focus').innerText = `${focused} min`;
+
+      const goal = settings.dailyFocusGoalMin || 120;
+      const pct = clamp(Math.round((focused/goal)*100), 0, 100);
+      document.getElementById('today-focus-bar').style.width = `${pct}%`;
+    }
+
+    function logFocus(min){
+      const day = todayKey();
+      stats.focusByDay[day] = (stats.focusByDay[day] || 0) + min;
+      writeJSON(K.stats, stats);
+      updateTodayFocusUI();
+    }
+
+    function stopTimer(){
+      clearInterval(timerId);
+      isRunning = false;
+    }
+
+    function startTimer(){
+      if (isRunning) return;
+
+      const btn = document.getElementById('timer-btn');
+      isRunning = true;
+
+      btn.innerText = (mode === 'focus') ? "Pause Study 🍦" : "Pause Break 🍦";
+      btn.style.backgroundColor = "#ff85a1";
+
+      timerId = setInterval(() => {
+        timeLeft--;
+        updateTimerDisplay();
+
+        if (timeLeft <= 0){
+          stopTimer();
+
+          if (mode === 'focus'){
+            logFocus(modeMinutes.focus);
+            showMessage("Focus session DONE 🥳🎀");
+          } else {
+            showMessage("Break complete! Back to slay 💖");
+          }
+
+          timeLeft = modeMinutes[mode]*60;
+          updateTimerDisplay();
+
+          btn.innerText = (mode === 'focus') ? "Start Study ☁️" : "Start Break 🍦";
+          btn.style.backgroundColor = "var(--pink)";
+        }
+      }, 1000);
+    }
+
+    function toggleTimer(){
+      const btn = document.getElementById('timer-btn');
+
+      if (isRunning){
+        stopTimer();
+        btn.innerText = (mode === 'focus') ? "Resume Study ✨" : "Resume Break ✨";
+        btn.style.backgroundColor = "var(--blue)";
+        return;
+      }
+      startTimer();
+    }
+
+    function setTimerMode(m, autoStart){
+      mode = m;
+      document.getElementById('session-label').innerText =
+        `Session: ${m === 'focus' ? 'Focus' : (m === 'break' ? 'Break' : 'Long Break')}`;
+
+      stopTimer();
+      timeLeft = modeMinutes[mode]*60;
+      updateTimerDisplay();
+
+      const btn = document.getElementById('timer-btn');
+      btn.innerText = (mode === 'focus') ? "Start Study ☁️" : "Start Break 🍦";
+      btn.style.backgroundColor = "var(--pink)";
+
+      if (autoStart) startTimer();
+    }
+
+    function resetTimer(){
+      setTimerMode('focus', false);
+    }
+
+    /* ---------------- Motivation ---------------- */
+    const motivations = [
+      "Bestie… one focus session and your future self will thank you 💖",
+      "We are romanticizing discipline today ✨",
+      "Do it messy. Do it anyway. 🎀",
+      "25 minutes now = peace later ☁️"
+    ];
+    function motivateMe(){
+      document.getElementById('motivation').innerText =
+        motivations[Math.floor(Math.random()*motivations.length)];
+    }
+
+    /* ---------------- Wipe demo ---------------- */
+    function wipeAppData(){
+      [K.tasks, K.notes, K.cards, K.planner, K.stats, K.settings, K.ui].forEach(k => localStorage.removeItem(k));
+      location.reload();
+    }
+
+    /* ---------------- Init ---------------- */
+    window.onload = () => {
+      applyDarkMode();
+
+      updateClock();
+      setInterval(updateClock, 1000);
+
+      document.getElementById('notes').value = readJSON(K.notes, "");
+
+      setTaskFilter('all');
+      renderTasks();
+
+      updateFlashcard();
+
+      normalizePlanner();
+
+      setVolume(settings.volume);
+      document.getElementById('vol').value = settings.volume;
+
+      updateTimerDisplay();
+      updateTodayFocusUI();
+
+      document.getElementById('task-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addTask();
+      });
+
+      setTimeout(() => showMessage("Welcome back bestie 💖"), 700);
+    };
+  </script>
+
+</body>
+</html>
