@@ -66,9 +66,10 @@
       <p class="text-sm text-blue-400 font-semibold">Your cute study companion ✨</p>
     </div>
 
-    <!-- error box -->
-    <div id="errorBox" class="hidden mb-4 p-4 rounded-2xl bg-pink-50 border-2 border-pink-200 text-pink-500 font-bold text-sm">
-      error
+    <!-- popup -->
+    <div id="authPopup" class="hidden mb-4 p-4 rounded-2xl border-2 font-bold text-sm transition">
+      <div id="authPopupTitle" class="text-base"></div>
+      <div id="authPopupText" class="mt-1"></div>
     </div>
 
     <div class="space-y-4">
@@ -140,14 +141,16 @@
   <script src="js/auth.js"></script>
 
   <script>
-    function showError(msg){
-      const box = document.getElementById('errorBox');
-      box.textContent = msg;
-      box.classList.remove('hidden');
-    }
+    let popupTimer = null;
 
-    function clearError(){
-      document.getElementById('errorBox').classList.add('hidden');
+    function showAuthPopup(title, msg){
+      const box = document.getElementById('authPopup');
+      document.getElementById('authPopupTitle').textContent = title;
+      document.getElementById('authPopupText').textContent = msg;
+      box.className = 'mb-4 p-4 rounded-2xl border-2 font-bold text-sm transition bg-pink-50 border-pink-200 text-pink-600';
+      box.classList.remove('hidden');
+      clearTimeout(popupTimer);
+      popupTimer = setTimeout(() => box.classList.add('hidden'), 3200);
     }
 
     function passwordValid(pw){
@@ -188,13 +191,13 @@
       if (input.includes('@')){
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!re.test(input)){
-          showError('Please enter a valid email address ✉️');
+          showAuthPopup('Invalid email', 'Please enter a valid email address.');
           return false;
         }
       } else {
         const digits = input.replace(/\D/g,'');
         if (digits.length < 10){
-          showError('Please enter a valid phone number 📱');
+          showAuthPopup('Invalid phone', 'Please enter a valid phone number.');
           return false;
         }
       }
@@ -202,13 +205,11 @@
     }
 
     function handleLogin(){
-      clearError();
-
       const emailOrPhone = document.getElementById('email').value.trim();
       const password = document.getElementById('password').value;
 
       if (!emailOrPhone || !password){
-        showError("Please enter your email/phone AND password 😭");
+        showAuthPopup('Missing details', 'Please enter your email/phone and password.');
         return;
       }
 
@@ -217,7 +218,7 @@
       }
 
       if (!passwordValid(password)){
-        showError("Password must be 8+ characters and include at least 1 special character (like ! @ # $ % ^ & *).");
+        showAuthPopup('Invalid password format', 'Password must be 8+ characters and include at least 1 special character.');
         return;
       }
 
@@ -232,9 +233,11 @@
       try {
         login();
       } catch (err) {
-        showError("Login failed because auth.js did not load. Check js/auth.js path.");
+        showAuthPopup('Login error', 'Login failed because auth.js did not load. Check js/auth.js path.');
       }
     }
+
+    window.showAuthPopup = showAuthPopup;
   </script>
 
 </body>
