@@ -80,6 +80,11 @@ transition:all .2s;
     <button type="submit" class="w-full py-4 rounded-2xl font-bold btn-cute">Continue 🎉</button>
   </form>
 
+  <div id="createPopup" class="hidden mt-4 p-4 rounded-2xl border-2 bg-pink-50 border-pink-200 text-pink-600 font-bold text-sm">
+    <div id="createPopupTitle" class="text-base"></div>
+    <div id="createPopupText" class="mt-1"></div>
+  </div>
+
   <p class="text-xs text-center text-gray-400 mt-6">
     Already have an account? <a href="index.html" class="text-pink-400 underline">Login</a>
   </p>
@@ -103,6 +108,16 @@ function isValidPassword(pw){
   return /[!@#$%^&*()_\-+=\[\]{};:'",.<>\/?\\|`~]/.test(pw);
 }
 
+let createPopupTimer = null;
+function showCreatePopup(title, message){
+  const box = document.getElementById('createPopup');
+  document.getElementById('createPopupTitle').textContent = title;
+  document.getElementById('createPopupText').textContent = message;
+  box.classList.remove('hidden');
+  clearTimeout(createPopupTimer);
+  createPopupTimer = setTimeout(() => box.classList.add('hidden'), 3200);
+}
+
 document.getElementById('create-form').addEventListener('submit', function(e) {
   e.preventDefault();
 
@@ -112,12 +127,12 @@ document.getElementById('create-form').addEventListener('submit', function(e) {
   const password = document.getElementById('password').value;
 
   if (!firstName || !rawContact || !password) {
-    alert('Please fill all fields');
+    showCreatePopup('Missing details', 'Please fill all fields.');
     return;
   }
 
   if(!isValidPassword(password)){
-    alert('Password must be at least 8 characters and include 1 special character.');
+    showCreatePopup('Invalid password', 'Password must be at least 8 characters and include 1 special character.');
     return;
   }
 
@@ -125,12 +140,12 @@ document.getElementById('create-form').addEventListener('submit', function(e) {
 
   if(contactType === 'email'){
     if(!isValidEmail(contact)){
-      alert('Please enter a valid email address.');
+      showCreatePopup('Invalid email', 'Please enter a valid email address.');
       return;
     }
   } else {
     if(contact.length < 10){
-      alert('Please enter a valid phone number (at least 10 digits).');
+      showCreatePopup('Invalid phone', 'Please enter a valid phone number (at least 10 digits).');
       return;
     }
   }
@@ -143,8 +158,10 @@ document.getElementById('create-form').addEventListener('submit', function(e) {
   );
 
   if(exists){
-    alert('An account with that email/phone already exists. Please login.');
-    window.location.href = 'index.html';
+    showCreatePopup('Account exists', 'An account with that email/phone already exists. Redirecting to login...');
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 900);
     return;
   }
 
