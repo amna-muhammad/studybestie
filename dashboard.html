@@ -124,7 +124,7 @@
       <div class="glass px-6 py-4 flex flex-wrap items-center justify-center gap-4">
         <div class="text-center">
           <div id="clock" class="text-2xl font-black text-[#ff85a1]">00:00:00</div>
-          <div id="greeting" class="text-xs font-black uppercase tracking-widest text-[#7fa9d1]">hi bestie 💖</div>
+          <div id="greeting" class="text-xs font-black uppercase tracking-widest text-[#7fa9d1]">Hi there</div>
         </div>
 
         <div class="w-px h-10 bg-[#ffc8dd] hidden md:block"></div>
@@ -133,9 +133,7 @@
           <button id="dark-toggle" class="px-4 py-2 rounded-2xl bg-white/70 border-2 border-white hover:scale-105 transition font-black text-sm">
             🌙 Dark
           </button>
-          <button onclick="logout()" class="px-4 py-2 rounded-2xl bg-white/70 border-2 border-white hover:scale-105 transition font-black text-sm">
-            🚪 Logout
-          </button>
+          <button onclick="logout()" class="px-4 py-2 rounded-2xl bg-white/70 border-2 border-white hover:scale-105 transition font-black text-sm">Logout</button>
         </div>
       </div>
     </div>
@@ -394,7 +392,7 @@
           <div class="glass p-6">
             <h3 class="text-xl font-black text-[#b08ba5]">Motivate Me ✨</h3>
             <p class="text-sm font-semibold text-[#7fa9d1] mt-1">Instant energy.</p>
-            <button onclick="motivateMe()" class="w-full mt-4 py-4 rounded-2xl btn-cute font-black text-lg shadow-lg">Give me motivation 💖</button>
+            <button onclick="motivateMe()" class="w-full mt-4 py-4 rounded-2xl btn-cute font-black text-lg shadow-lg">Give me motivation</button>
             <p id="motivation" class="mt-4 text-lg font-bold" style="font-family:'Indie Flower', cursive;"></p>
           </div>
 
@@ -613,7 +611,7 @@
       input.value = '';
       writeJSON(K.tasks, tasks);
       renderTasks();
-      showMessage("Goal added ✨");
+      showMessage("Goal added");
     }
 
     function toggleTask(id){
@@ -693,7 +691,7 @@
 
       renderFlashcardList();
       updateFlashcard();
-      showMessage("Notecard saved 📖✨");
+      showMessage("Notecard saved");
     }
 
     function deleteFlashcard(i){
@@ -893,7 +891,7 @@
       planner.items.sort((a,b)=>a.time.localeCompare(b.time));
       writeJSON(K.planner, planner);
       renderPlanner();
-      showMessage("Template applied 💖");
+      showMessage("Template applied");
     }
 
     function clearPlanner(){
@@ -1047,7 +1045,7 @@
       });
       suggestSongs('study');
 
-      setTimeout(() => showMessage("Welcome back bestie 💖"), 700);
+      setTimeout(() => showMessage("Welcome back"), 700);
     };
   </script>
 
