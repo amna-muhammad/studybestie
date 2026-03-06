@@ -153,12 +153,6 @@
       popupTimer = setTimeout(() => box.classList.add('hidden'), 3200);
     }
 
-    function passwordValid(pw){
-      if (!pw || pw.length < 8) return false;
-      const special = /[!@#$%^&*()_\-+=\[\]{};:'",.<>\/?\\|`~]/;
-      return special.test(pw);
-    }
-
     function openReset(){
       if (confirm("This will clear ALL local StudyBestie accounts + data on this browser. Continue?")) {
         localStorage.clear();
@@ -215,11 +209,6 @@
 
       if (!validateLoginKey(emailOrPhone)){
         return; // message shown inside validator
-      }
-
-      if (!passwordValid(password)){
-        showAuthPopup('Invalid password format', 'Password must be 8+ characters and include at least 1 special character.');
-        return;
       }
 
       // remember user
