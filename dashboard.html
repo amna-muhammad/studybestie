@@ -451,10 +451,10 @@
   </div>
 
   <!-- Audio -->
-  <audio id="audio-rain" loop preload="none" src="https://www.orangefreesounds.com/wp-content/uploads/2021/08/Rain-ambience-sound-effect.mp3"></audio>
-  <audio id="audio-fire" loop preload="none" src="https://www.orangefreesounds.com/wp-content/uploads/2024/11/Fire-crackling-sound-effect.mp3"></audio>
-  <audio id="audio-cafe" loop preload="none" src="https://www.orangefreesounds.com/wp-content/uploads/2020/02/Coffee-shop-background-noise.mp3"></audio>
-  <audio id="audio-birds" loop preload="none" src="https://www.orangefreesounds.com/wp-content/uploads/2014/07/Forest-birds-sound.mp3"></audio>
+  <audio id="audio-rain" loop preload="none" src="https://samplelib.com/lib/preview/mp3/sample-3s.mp3"></audio>
+  <audio id="audio-fire" loop preload="none" src="https://samplelib.com/lib/preview/mp3/sample-6s.mp3"></audio>
+  <audio id="audio-cafe" loop preload="none" src="https://samplelib.com/lib/preview/mp3/sample-9s.mp3"></audio>
+  <audio id="audio-birds" loop preload="none" src="https://samplelib.com/lib/preview/mp3/sample-12s.mp3"></audio>
 
   <!-- Toast -->
   <div id="message-box" class="fixed bottom-8 left-1/2 -translate-x-1/2 glass px-8 py-4 transform translate-y-32 transition-transform duration-500 z-[100] text-center border-4 border-[#ffafcc]">
@@ -765,8 +765,12 @@
           await audio.play();
           btn.classList.add('ring-4','ring-[#ffafcc]','bg-[#ffebf0]');
           showMessage(`${type[0].toUpperCase()+type.slice(1)} vibes on 🎧`);
-        } catch {
-          showMessage("Browser blocked audio. Click again after interacting 🙈");
+        } catch (err) {
+          if (err && err.name === 'NotAllowedError') {
+            showMessage("Browser blocked audio. Click once on the page, then try again.");
+          } else {
+            showMessage("Audio source could not load right now. Try another vibe.");
+          }
         }
       } else {
         audio.pause();
