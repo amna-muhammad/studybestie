@@ -414,7 +414,7 @@
         </div>
 
         <div class="mt-6 p-6 rounded-3xl bg-[#fff0f3]/70 border-2 border-white">
-          <div class="font-black text-[#ff85a1]">Reset (demo)</div>
+          <div class="font-black text-[#ff85a1]">Reset App Data</div>
           <div class="text-sm font-semibold text-[#7fa9d1] mt-1">
             If you want a fresh start for presenting, use the button below.
           </div>
@@ -986,7 +986,7 @@
         motivations[Math.floor(Math.random()*motivations.length)];
     }
 
-    /* ---------------- Wipe demo ---------------- */
+    /* ---------------- Wipe app data ---------------- */
     function wipeAppData(){
       [K.tasks, K.notes, K.cards, K.planner, K.stats, K.settings, K.ui].forEach(k => localStorage.removeItem(k));
       location.reload();
