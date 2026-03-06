@@ -77,6 +77,21 @@ transition:all .2s;
       Password must be 8+ characters and include 1 special character (like ! @ # $).
     </div>
 
+    <div class="pt-2">
+      <p class="text-xs font-black text-[#7fa9d1] uppercase tracking-widest mb-2">Security Questions</p>
+
+      <label class="text-xs font-bold text-gray-600">1. What city were you born in?</label>
+      <input id="securityAnswer1" type="text" placeholder="Answer 1"
+        class="w-full mt-1 p-3 rounded-2xl border-2 border-pink-100 bg-white focus:outline-none font-semibold" required />
+
+      <label class="mt-3 block text-xs font-bold text-gray-600">2. What is your favorite teacher's name?</label>
+      <input id="securityAnswer2" type="text" placeholder="Answer 2"
+        class="w-full mt-1 p-3 rounded-2xl border-2 border-pink-100 bg-white focus:outline-none font-semibold" required />
+
+      <label class="mt-3 block text-xs font-bold text-gray-600">3. What was your first pet's name?</label>
+      <input id="securityAnswer3" type="text" placeholder="Answer 3"
+        class="w-full mt-1 p-3 rounded-2xl border-2 border-pink-100 bg-white focus:outline-none font-semibold" required />
+    </div>
     <button type="submit" class="w-full py-4 rounded-2xl font-bold btn-cute">Continue 🎉</button>
   </form>
 
@@ -108,6 +123,10 @@ function isValidPassword(pw){
   return /[!@#$%^&*()_\-+=\[\]{};:'",.<>\/?\\|`~]/.test(pw);
 }
 
+function normalizeAnswer(v){
+  return String(v || '').trim().toLowerCase();
+}
+
 let createPopupTimer = null;
 function showCreatePopup(title, message){
   const box = document.getElementById('createPopup');
@@ -125,9 +144,12 @@ document.getElementById('create-form').addEventListener('submit', function(e) {
   const contactType = document.querySelector('input[name="contactType"]:checked').value;
   const rawContact = document.getElementById('contact').value.trim();
   const password = document.getElementById('password').value;
+  const securityAnswer1 = document.getElementById('securityAnswer1').value;
+  const securityAnswer2 = document.getElementById('securityAnswer2').value;
+  const securityAnswer3 = document.getElementById('securityAnswer3').value;
 
-  if (!firstName || !rawContact || !password) {
-    showCreatePopup('Missing details', 'Please fill all fields.');
+  if (!firstName || !rawContact || !password || !securityAnswer1 || !securityAnswer2 || !securityAnswer3) {
+    showCreatePopup('Missing details', 'Please fill all fields, including all 3 security answers.');
     return;
   }
 
@@ -170,7 +192,17 @@ document.getElementById('create-form').addEventListener('submit', function(e) {
     name: firstName,
     email: contactType === 'email' ? contact : '',
     phone: contactType === 'phone' ? contact : '',
-    password
+    password,
+    securityQuestions: [
+      'What city were you born in?',
+      'What is your favorite teacher\'s name?',
+      'What was your first pet\'s name?'
+    ],
+    securityAnswers: [
+      normalizeAnswer(securityAnswer1),
+      normalizeAnswer(securityAnswer2),
+      normalizeAnswer(securityAnswer3)
+    ]
   };
   accounts.push(newAccount);
   localStorage.setItem('studyBestie_accounts', JSON.stringify(accounts));
@@ -188,3 +220,4 @@ document.getElementById('create-form').addEventListener('submit', function(e) {
 
 </body>
 </html>
+

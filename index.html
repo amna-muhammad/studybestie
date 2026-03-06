@@ -140,7 +140,7 @@
   <div id="resetModal" class="hidden fixed inset-0 z-50 bg-black/35 flex items-center justify-center p-4">
     <div class="glass w-full max-w-md p-6">
       <h2 class="text-2xl font-black text-pink-400">Reset Password</h2>
-      <p class="text-xs font-bold text-gray-500 mt-1">Use your email or phone to set a new password.</p>
+      <p class="text-xs font-bold text-gray-500 mt-1">Enter your email/phone, then answer all 3 security questions.</p>
 
       <form id="resetForm" class="mt-4 space-y-3">
         <input
@@ -155,6 +155,36 @@
           placeholder="New password (8+ chars + 1 special)"
           class="w-full p-3 rounded-2xl border-2 border-pink-100 bg-white focus:outline-none focus:border-pink-300 font-semibold"
         />
+
+        <div class="pt-1">
+          <label class="text-xs font-bold text-gray-600">1. What city were you born in?</label>
+          <input
+            id="resetAnswer1"
+            type="text"
+            placeholder="Answer 1"
+            class="w-full mt-1 p-3 rounded-2xl border-2 border-pink-100 bg-white focus:outline-none focus:border-pink-300 font-semibold"
+          />
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-gray-600">2. What is your favorite teacher's name?</label>
+          <input
+            id="resetAnswer2"
+            type="text"
+            placeholder="Answer 2"
+            class="w-full mt-1 p-3 rounded-2xl border-2 border-pink-100 bg-white focus:outline-none focus:border-pink-300 font-semibold"
+          />
+        </div>
+
+        <div>
+          <label class="text-xs font-bold text-gray-600">3. What was your first pet's name?</label>
+          <input
+            id="resetAnswer3"
+            type="text"
+            placeholder="Answer 3"
+            class="w-full mt-1 p-3 rounded-2xl border-2 border-pink-100 bg-white focus:outline-none focus:border-pink-300 font-semibold"
+          />
+        </div>
 
         <div class="flex gap-2 pt-1">
           <button type="submit" class="flex-1 py-3 rounded-2xl font-bold btn-cute">Update Password</button>
@@ -191,6 +221,9 @@
       const remembered = document.getElementById('email').value.trim();
       document.getElementById('resetKey').value = remembered;
       document.getElementById('resetPassword').value = '';
+      document.getElementById('resetAnswer1').value = '';
+      document.getElementById('resetAnswer2').value = '';
+      document.getElementById('resetAnswer3').value = '';
       document.getElementById('resetModal').classList.remove('hidden');
     }
 
@@ -210,12 +243,19 @@
       return value.replace(/\D/g, '');
     }
 
+    function normalizeAnswer(v){
+      return String(v || '').trim().toLowerCase();
+    }
+
     function resetPasswordFromModal(){
       const keyRaw = document.getElementById('resetKey').value.trim();
       const newPassword = document.getElementById('resetPassword').value;
+      const answer1 = document.getElementById('resetAnswer1').value;
+      const answer2 = document.getElementById('resetAnswer2').value;
+      const answer3 = document.getElementById('resetAnswer3').value;
 
-      if (!keyRaw || !newPassword){
-        showAuthPopup('Missing details', 'Enter your email/phone and new password.');
+      if (!keyRaw || !newPassword || !answer1 || !answer2 || !answer3){
+        showAuthPopup('Missing details', 'Enter your email/phone, new password, and all 3 security answers.');
         return;
       }
 
@@ -232,6 +272,27 @@
 
       if (userIndex === -1){
         showAuthPopup('Account not found', 'No account matches that email/phone.');
+        return;
+      }
+
+      const savedAnswers = Array.isArray(accounts[userIndex].securityAnswers)
+        ? accounts[userIndex].securityAnswers
+        : [];
+
+      if (savedAnswers.length !== 3){
+        showAuthPopup('Cannot reset', 'This account does not have security questions set. Please create a new account.');
+        return;
+      }
+
+      const enteredAnswers = [
+        normalizeAnswer(answer1),
+        normalizeAnswer(answer2),
+        normalizeAnswer(answer3)
+      ];
+
+      const matches = savedAnswers.every((ans, i) => normalizeAnswer(ans) === enteredAnswers[i]);
+      if (!matches){
+        showAuthPopup('Wrong answers', 'Security question answers do not match.');
         return;
       }
 
