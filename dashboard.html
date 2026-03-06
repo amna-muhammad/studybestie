@@ -729,33 +729,65 @@
       });
     }
 
-        /* ---------------- Song Suggester ---------------- */
+    /* ---------------- Song Suggester ---------------- */
     const MOOD_SONG_MAP = {
       happy: [
-        { title: 'Good as Hell', artist: 'Lizzo' },
-        { title: 'Levitating', artist: 'Dua Lipa' },
         { title: 'Happy', artist: 'Pharrell Williams' },
-        { title: 'Walking on Sunshine', artist: 'Katrina and the Waves' }
+        { title: 'Levitating', artist: 'Dua Lipa' },
+        { title: 'Good as Hell', artist: 'Lizzo' },
+        { title: 'Walking on Sunshine', artist: 'Katrina and the Waves' },
+        { title: 'Firework', artist: 'Katy Perry' },
+        { title: 'Shut Up and Dance', artist: 'WALK THE MOON' },
+        { title: 'Cant Stop the Feeling', artist: 'Justin Timberlake' },
+        { title: 'Uptown Funk', artist: 'Mark Ronson ft. Bruno Mars' }
       ],
       study: [
-        { title: 'River Flows In You', artist: 'Yiruma' },
-        { title: 'Nuvole Bianche', artist: 'Ludovico Einaudi' },
-        { title: 'Saturn', artist: 'Sleeping At Last' },
-        { title: 'Comptine d un autre ete', artist: 'Yann Tiersen' }
+        { title: 'Yellow', artist: 'Coldplay' },
+        { title: 'Photograph', artist: 'Ed Sheeran' },
+        { title: 'The Scientist', artist: 'Coldplay' },
+        { title: 'Someone You Loved', artist: 'Lewis Capaldi' },
+        { title: 'Let Her Go', artist: 'Passenger' },
+        { title: 'Fix You', artist: 'Coldplay' },
+        { title: 'Dusk Till Dawn', artist: 'ZAYN ft. Sia' },
+        { title: 'Night Changes', artist: 'One Direction' }
       ],
       energetic: [
         { title: 'Believer', artist: 'Imagine Dragons' },
         { title: 'Cant Hold Us', artist: 'Macklemore and Ryan Lewis' },
         { title: 'Titanium', artist: 'David Guetta ft. Sia' },
-        { title: 'Stronger', artist: 'Kanye West' }
+        { title: 'Stronger', artist: 'Kanye West' },
+        { title: 'Thunder', artist: 'Imagine Dragons' },
+        { title: 'Remember the Name', artist: 'Fort Minor' },
+        { title: 'Hall of Fame', artist: 'The Script ft. will.i.am' },
+        { title: 'Power', artist: 'Kanye West' }
       ]
     };
 
+    const lastSuggestionKeyByMood = {};
+
+    function pickRandomSongs(pool, count){
+      const arr = [...pool];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr.slice(0, Math.min(count, arr.length));
+    }
+
     function suggestSongs(mood){
       const list = document.getElementById('song-suggestions');
-      const songs = MOOD_SONG_MAP[mood] || MOOD_SONG_MAP.study;
+      const moodKey = MOOD_SONG_MAP[mood] ? mood : 'study';
+      const songs = MOOD_SONG_MAP[moodKey];
 
-      list.innerHTML = songs.map((s) => {
+      let picks = pickRandomSongs(songs, 4);
+      let key = picks.map(s => `${s.title}|${s.artist}`).join('||');
+      if (songs.length > 4 && lastSuggestionKeyByMood[moodKey] === key) {
+        picks = pickRandomSongs(songs, 4);
+        key = picks.map(s => `${s.title}|${s.artist}`).join('||');
+      }
+      lastSuggestionKeyByMood[moodKey] = key;
+
+      list.innerHTML = picks.map((s) => {
         const q = encodeURIComponent(`${s.title} ${s.artist}`);
         return `
           <a href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener noreferrer"
