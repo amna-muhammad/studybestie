@@ -332,6 +332,19 @@
               </div>
               <input id="vol" type="range" min="0" max="100" value="70" class="w-full mt-3" oninput="setVolume(this.value)"/>
             </div>
+
+            <div class="mt-4 glass p-4">
+              <h4 class="text-sm font-black text-[#ff85a1] uppercase tracking-widest">AI Song Suggester</h4>
+              <p class="text-[11px] font-semibold text-[#7fa9d1] mt-1">Type emoji mood like 🎧💖☔ and get songs.</p>
+              <div class="mt-3 flex gap-2">
+                <input id="emoji-input" type="text" placeholder="ex: 💖🌧️📚"
+                  class="flex-1 bg-white/80 border-2 border-white rounded-xl px-3 py-2 text-sm font-semibold focus:outline-none focus:border-[#ffafcc]">
+                <button onclick="suggestSongs()" class="px-3 py-2 rounded-xl bg-[#a2d2ff] text-white text-xs font-black hover:scale-105 transition">
+                  Suggest
+                </button>
+              </div>
+              <div id="song-suggestions" class="mt-3 space-y-2 text-xs"></div>
+            </div>
           </section>
 
         </div>
@@ -747,6 +760,96 @@
     }
 
     /* ---------------- Audio ---------------- */
+    const EMOJI_SONG_MAP = {
+      '💖': [
+        { title: 'Lover', artist: 'Taylor Swift' },
+        { title: 'Just the Way You Are', artist: 'Bruno Mars' },
+        { title: 'Perfect', artist: 'Ed Sheeran' }
+      ],
+      '🌧': [
+        { title: 'Sweater Weather', artist: 'The Neighbourhood' },
+        { title: 'After Rain', artist: 'Dermot Kennedy' },
+        { title: 'The Night We Met', artist: 'Lord Huron' }
+      ],
+      '☔': [
+        { title: 'Set Fire to the Rain', artist: 'Adele' },
+        { title: 'Riders on the Storm', artist: 'The Doors' },
+        { title: 'Umbrella', artist: 'Rihanna' }
+      ],
+      '😌': [
+        { title: 'Sunset Lover', artist: 'Petit Biscuit' },
+        { title: 'Weightless', artist: 'Marconi Union' },
+        { title: 'Bloom', artist: 'The Paper Kites' }
+      ],
+      '🔥': [
+        { title: 'Believer', artist: 'Imagine Dragons' },
+        { title: 'INDUSTRY BABY', artist: 'Lil Nas X' },
+        { title: 'Power', artist: 'Kanye West' }
+      ],
+      '📚': [
+        { title: 'Lo-fi Study', artist: 'Lofi Girl' },
+        { title: 'River Flows In You', artist: 'Yiruma' },
+        { title: 'Nuvole Bianche', artist: 'Ludovico Einaudi' }
+      ],
+      '🎧': [
+        { title: 'Blinding Lights', artist: 'The Weeknd' },
+        { title: 'Levitating', artist: 'Dua Lipa' },
+        { title: 'As It Was', artist: 'Harry Styles' }
+      ],
+      '☁': [
+        { title: 'Space Song', artist: 'Beach House' },
+        { title: 'Dreams', artist: 'Fleetwood Mac' },
+        { title: 'Golden Hour', artist: 'JVKE' }
+      ],
+      '🌙': [
+        { title: 'Midnight City', artist: 'M83' },
+        { title: 'Talking to the Moon', artist: 'Bruno Mars' },
+        { title: 'Night Changes', artist: 'One Direction' }
+      ]
+    };
+
+    const DEFAULT_SONGS = [
+      { title: 'Until I Found You', artist: 'Stephen Sanchez' },
+      { title: 'Clocks', artist: 'Coldplay' },
+      { title: 'Yellow', artist: 'Coldplay' }
+    ];
+
+    function suggestSongs(){
+      const input = document.getElementById('emoji-input');
+      const list = document.getElementById('song-suggestions');
+      const raw = (input.value || '').trim();
+
+      if (!raw){
+        list.innerHTML = `<div class="font-semibold text-[#7fa9d1]">Type at least one emoji mood first.</div>`;
+        return;
+      }
+
+      const picks = [];
+      for (const ch of Array.from(raw)){
+        if (EMOJI_SONG_MAP[ch]) picks.push(...EMOJI_SONG_MAP[ch]);
+      }
+
+      const unique = [];
+      const seen = new Set();
+      (picks.length ? picks : DEFAULT_SONGS).forEach((s) => {
+        const key = `${s.title}::${s.artist}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        unique.push(s);
+      });
+
+      const top = unique.slice(0, 5);
+      list.innerHTML = top.map((s) => {
+        const q = encodeURIComponent(`${s.title} ${s.artist}`);
+        return `
+          <a href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener noreferrer"
+            class="block p-2 rounded-xl bg-white/70 border border-white font-semibold text-[#5f4b66] hover:bg-[#fff0f3] transition">
+            ${escapeHTML(s.title)} - ${escapeHTML(s.artist)}
+          </a>
+        `;
+      }).join('');
+    }
+
     async function toggleAudio(type){
       const audio = document.getElementById(`audio-${type}`);
       const btn = document.getElementById(`btn-${type}`);
@@ -1035,9 +1138,15 @@
         if (e.key === 'Enter') addTask();
       });
 
+      document.getElementById('emoji-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') suggestSongs();
+      });
+
       setTimeout(() => showMessage("Welcome back bestie 💖"), 700);
     };
   </script>
 
 </body>
 </html>
+
+
