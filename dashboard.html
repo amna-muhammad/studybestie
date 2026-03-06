@@ -451,10 +451,10 @@
   </div>
 
   <!-- Audio -->
-  <audio id="audio-rain" loop src="https://www.soundjay.com/nature/rain-07.mp3"></audio>
-  <audio id="audio-fire" loop src="https://www.soundjay.com/nature/fire-crackling-01.mp3"></audio>
-  <audio id="audio-cafe" loop src="https://www.soundjay.com/misc/coffee-shop-1.mp3"></audio>
-  <audio id="audio-birds" loop src="https://www.soundjay.com/nature/sounds/birds-chirping-7.mp3"></audio>
+  <audio id="audio-rain" loop preload="none" src="https://www.orangefreesounds.com/wp-content/uploads/2021/08/Rain-ambience-sound-effect.mp3"></audio>
+  <audio id="audio-fire" loop preload="none" src="https://www.orangefreesounds.com/wp-content/uploads/2024/11/Fire-crackling-sound-effect.mp3"></audio>
+  <audio id="audio-cafe" loop preload="none" src="https://www.orangefreesounds.com/wp-content/uploads/2020/02/Coffee-shop-background-noise.mp3"></audio>
+  <audio id="audio-birds" loop preload="none" src="https://www.orangefreesounds.com/wp-content/uploads/2014/07/Forest-birds-sound.mp3"></audio>
 
   <!-- Toast -->
   <div id="message-box" class="fixed bottom-8 left-1/2 -translate-x-1/2 glass px-8 py-4 transform translate-y-32 transition-transform duration-500 z-[100] text-center border-4 border-[#ffafcc]">
@@ -753,6 +753,14 @@
 
       if (audio.paused){
         try{
+          ['rain', 'fire', 'cafe', 'birds'].forEach((k) => {
+            if (k === type) return;
+            const otherAudio = document.getElementById(`audio-${k}`);
+            const otherBtn = document.getElementById(`btn-${k}`);
+            otherAudio.pause();
+            otherBtn.classList.remove('ring-4','ring-[#ffafcc]','bg-[#ffebf0]');
+          });
+
           audio.volume = settings.volume/100;
           await audio.play();
           btn.classList.add('ring-4','ring-[#ffafcc]','bg-[#ffebf0]');
@@ -1013,6 +1021,11 @@
 
       updateTimerDisplay();
       updateTodayFocusUI();
+
+      ['rain', 'fire', 'cafe', 'birds'].forEach((k) => {
+        const a = document.getElementById(`audio-${k}`);
+        a.addEventListener('error', () => showMessage(`Could not load ${k} audio right now.`));
+      });
 
       document.getElementById('task-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') addTask();
