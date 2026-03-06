@@ -109,7 +109,7 @@
           onclick="openReset()"
           class="underline text-blue-400 hover:text-blue-500"
         >
-          Reset (local)
+          Forgot password?
         </button>
       </div>
     </div>
@@ -137,6 +137,41 @@
 
   </div>
 
+  <div id="resetModal" class="hidden fixed inset-0 z-50 bg-black/35 flex items-center justify-center p-4">
+    <div class="glass w-full max-w-md p-6">
+      <h2 class="text-2xl font-black text-pink-400">Reset Password</h2>
+      <p class="text-xs font-bold text-gray-500 mt-1">Use your email or phone to set a new password.</p>
+
+      <form id="resetForm" class="mt-4 space-y-3">
+        <input
+          id="resetKey"
+          type="text"
+          placeholder="Email or Phone"
+          class="w-full p-3 rounded-2xl border-2 border-pink-100 bg-white focus:outline-none focus:border-pink-300 font-semibold"
+        />
+        <input
+          id="resetPassword"
+          type="password"
+          placeholder="New password (8+ chars + 1 special)"
+          class="w-full p-3 rounded-2xl border-2 border-pink-100 bg-white focus:outline-none focus:border-pink-300 font-semibold"
+        />
+
+        <div class="flex gap-2 pt-1">
+          <button type="submit" class="flex-1 py-3 rounded-2xl font-bold btn-cute">Update Password</button>
+          <button type="button" onclick="closeReset()" class="flex-1 py-3 rounded-2xl font-bold btn-blue">Cancel</button>
+        </div>
+      </form>
+
+      <button
+        type="button"
+        onclick="wipeLocalData()"
+        class="mt-4 w-full py-2 rounded-xl border-2 border-pink-200 text-pink-500 font-bold text-xs hover:bg-pink-50 transition"
+      >
+        Clear all local app data
+      </button>
+    </div>
+  </div>
+
   <script src="js/auth.js"></script>
 
   <script>
@@ -153,10 +188,64 @@
     }
 
     function openReset(){
-      if (confirm("This will clear ALL local StudyBestie accounts + data on this browser. Continue?")) {
-        localStorage.clear();
-        location.reload();
+      const remembered = document.getElementById('email').value.trim();
+      document.getElementById('resetKey').value = remembered;
+      document.getElementById('resetPassword').value = '';
+      document.getElementById('resetModal').classList.remove('hidden');
+    }
+
+    function closeReset(){
+      document.getElementById('resetModal').classList.add('hidden');
+    }
+
+    function passwordStrongEnough(pw){
+      if (!pw || pw.length < 8) return false;
+      const special = /[!@#$%^&*()_\-+=\[\]{};:'",.<>\/?\\|`~]/;
+      return special.test(pw);
+    }
+
+    function normalizeKey(v){
+      const value = (v || '').trim();
+      if (value.includes('@')) return value.toLowerCase();
+      return value.replace(/\D/g, '');
+    }
+
+    function resetPasswordFromModal(){
+      const keyRaw = document.getElementById('resetKey').value.trim();
+      const newPassword = document.getElementById('resetPassword').value;
+
+      if (!keyRaw || !newPassword){
+        showAuthPopup('Missing details', 'Enter your email/phone and new password.');
+        return;
       }
+
+      if (!passwordStrongEnough(newPassword)){
+        showAuthPopup('Invalid password', 'Password must be 8+ characters and include at least 1 special character.');
+        return;
+      }
+
+      const key = normalizeKey(keyRaw);
+      const accounts = JSON.parse(localStorage.getItem('studyBestie_accounts') || '[]');
+      const userIndex = accounts.findIndex(a =>
+        (a.email && normalizeKey(a.email) === key) || (a.phone && normalizeKey(a.phone) === key)
+      );
+
+      if (userIndex === -1){
+        showAuthPopup('Account not found', 'No account matches that email/phone.');
+        return;
+      }
+
+      accounts[userIndex].password = newPassword;
+      localStorage.setItem('studyBestie_accounts', JSON.stringify(accounts));
+      closeReset();
+      showAuthPopup('Password updated', 'Your password was reset successfully. You can log in now.');
+    }
+
+    function wipeLocalData(){
+      localStorage.clear();
+      closeReset();
+      showAuthPopup('Local data cleared', 'All local StudyBestie data on this browser was removed.');
+      setTimeout(() => location.reload(), 700);
     }
 
     // show/hide password
@@ -177,7 +266,13 @@
 
     // enter key = login
     document.addEventListener('keydown', (e) => {
+      if (!document.getElementById('resetModal').classList.contains('hidden')) return;
       if (e.key === 'Enter') handleLogin();
+    });
+
+    document.getElementById('resetForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      resetPasswordFromModal();
     });
 
     function validateLoginKey(input){
