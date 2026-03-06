@@ -303,44 +303,27 @@
               oninput="saveNotes()"></textarea>
             <div class="mt-2 text-[9px] font-black text-[#ffafcc] uppercase tracking-widest text-right">Auto-saving… ✨</div>
           </section>
-
           <!-- Sounds -->
           <section class="glass p-6">
             <h3 class="text-xl font-black mb-4 flex items-center gap-2 text-[#7fa9d1]">
               🎧 Study Vibes
             </h3>
 
-            <div class="grid grid-cols-2 gap-3">
-              <button onclick="toggleAudio('rain')" id="btn-rain" class="p-4 bg-[#f0f9ff]/70 rounded-2xl hover:scale-105 transition flex flex-col items-center gap-2 border-2 border-white shadow-sm">
-                <span class="text-3xl">🌧️</span><span class="text-[10px] font-black uppercase text-[#7fa9d1]">Rainy</span>
-              </button>
-              <button onclick="toggleAudio('fire')" id="btn-fire" class="p-4 bg-[#fff1f2]/70 rounded-2xl hover:scale-105 transition flex flex-col items-center gap-2 border-2 border-white shadow-sm">
-                <span class="text-3xl">🔥</span><span class="text-[10px] font-black uppercase text-[#ff85a1]">Cozy</span>
-              </button>
-              <button onclick="toggleAudio('cafe')" id="btn-cafe" class="p-4 bg-[#fffbeb]/70 rounded-2xl hover:scale-105 transition flex flex-col items-center gap-2 border-2 border-white shadow-sm">
-                <span class="text-3xl">🧁</span><span class="text-[10px] font-black uppercase text-[#d97706]">Cafe</span>
-              </button>
-              <button onclick="toggleAudio('birds')" id="btn-birds" class="p-4 bg-[#f0fdf4]/70 rounded-2xl hover:scale-105 transition flex flex-col items-center gap-2 border-2 border-white shadow-sm">
-                <span class="text-3xl">🦄</span><span class="text-[10px] font-black uppercase text-[#16a34a]">Forest</span>
-              </button>
-            </div>
-
-            <div class="mt-5 glass p-4">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-black uppercase tracking-widest text-[#b08ba5]">Volume</span>
-                <span id="vol-label" class="text-xs font-black text-[#7fa9d1]">70%</span>
-              </div>
-              <input id="vol" type="range" min="0" max="100" value="70" class="w-full mt-3" oninput="setVolume(this.value)"/>
-            </div>
-
             <div class="mt-4 glass p-4">
-              <h4 class="text-sm font-black text-[#ff85a1] uppercase tracking-widest">AI Song Suggester</h4>
-              <p class="text-[11px] font-semibold text-[#7fa9d1] mt-1">Type emoji mood like 🎧💖☔ and get songs.</p>
-              <div class="mt-3 flex gap-2">
-                <input id="emoji-input" type="text" placeholder="ex: 💖🌧️📚"
-                  class="flex-1 bg-white/80 border-2 border-white rounded-xl px-3 py-2 text-sm font-semibold focus:outline-none focus:border-[#ffafcc]">
-                <button onclick="suggestSongs()" class="px-3 py-2 rounded-xl bg-[#a2d2ff] text-white text-xs font-black hover:scale-105 transition">
-                  Suggest
+              <h4 class="text-sm font-black text-[#ff85a1] uppercase tracking-widest">Song Suggester</h4>
+              <p class="text-[11px] font-semibold text-[#7fa9d1] mt-1">Pick one mood and get songs instantly.</p>
+              <div class="mt-3 grid grid-cols-3 gap-2">
+                <button onclick="suggestSongs('happy')" class="p-2 rounded-xl bg-[#fff0f3] border-2 border-white text-center hover:scale-105 transition">
+                  <div class="text-2xl">😊</div>
+                  <div class="text-[10px] font-black text-[#ff85a1] uppercase">Happy</div>
+                </button>
+                <button onclick="suggestSongs('study')" class="p-2 rounded-xl bg-[#eef6ff] border-2 border-white text-center hover:scale-105 transition">
+                  <div class="text-2xl">📚</div>
+                  <div class="text-[10px] font-black text-[#7fa9d1] uppercase">Study</div>
+                </button>
+                <button onclick="suggestSongs('energetic')" class="p-2 rounded-xl bg-[#fff8eb] border-2 border-white text-center hover:scale-105 transition">
+                  <div class="text-2xl">⚡</div>
+                  <div class="text-[10px] font-black text-[#d97706] uppercase">Energetic</div>
                 </button>
               </div>
               <div id="song-suggestions" class="mt-3 space-y-2 text-xs"></div>
@@ -462,14 +445,7 @@
       <div id="fc-list" class="mt-6 max-h-48 overflow-y-auto space-y-2 border-t border-white/60 pt-4"></div>
     </div>
   </div>
-
-  <!-- Audio -->
-  <audio id="audio-rain" loop preload="none" src="https://samplelib.com/lib/preview/mp3/sample-3s.mp3"></audio>
-  <audio id="audio-fire" loop preload="none" src="https://samplelib.com/lib/preview/mp3/sample-6s.mp3"></audio>
-  <audio id="audio-cafe" loop preload="none" src="https://samplelib.com/lib/preview/mp3/sample-9s.mp3"></audio>
-  <audio id="audio-birds" loop preload="none" src="https://samplelib.com/lib/preview/mp3/sample-12s.mp3"></audio>
-
-  <!-- Toast -->
+<!-- Toast -->
   <div id="message-box" class="fixed bottom-8 left-1/2 -translate-x-1/2 glass px-8 py-4 transform translate-y-32 transition-transform duration-500 z-[100] text-center border-4 border-[#ffafcc]">
     <span id="message-text" class="font-black text-[#ff85a1]">Message here... ✨</span>
   </div>
@@ -561,13 +537,7 @@
     }
 
     /* ---------------- Settings ---------------- */
-    let settings = readJSON(K.settings, { dailyFocusGoalMin:120, volume:70 });
-    function setVolume(v){
-      settings.volume = clamp(parseInt(v,10) || 70, 0, 100);
-      writeJSON(K.settings, settings);
-      document.getElementById('vol-label').innerText = `${settings.volume}%`;
-      document.querySelectorAll('audio').forEach(a => a.volume = settings.volume/100);
-    }
+    let settings = readJSON(K.settings, { dailyFocusGoalMin:120 });
 
     /* ---------------- Tasks ---------------- */
     let taskFilter = 'all';
@@ -759,87 +729,33 @@
       });
     }
 
-    /* ---------------- Audio ---------------- */
-    const EMOJI_SONG_MAP = {
-      '💖': [
-        { title: 'Lover', artist: 'Taylor Swift' },
-        { title: 'Just the Way You Are', artist: 'Bruno Mars' },
-        { title: 'Perfect', artist: 'Ed Sheeran' }
-      ],
-      '🌧': [
-        { title: 'Sweater Weather', artist: 'The Neighbourhood' },
-        { title: 'After Rain', artist: 'Dermot Kennedy' },
-        { title: 'The Night We Met', artist: 'Lord Huron' }
-      ],
-      '☔': [
-        { title: 'Set Fire to the Rain', artist: 'Adele' },
-        { title: 'Riders on the Storm', artist: 'The Doors' },
-        { title: 'Umbrella', artist: 'Rihanna' }
-      ],
-      '😌': [
-        { title: 'Sunset Lover', artist: 'Petit Biscuit' },
-        { title: 'Weightless', artist: 'Marconi Union' },
-        { title: 'Bloom', artist: 'The Paper Kites' }
-      ],
-      '🔥': [
-        { title: 'Believer', artist: 'Imagine Dragons' },
-        { title: 'INDUSTRY BABY', artist: 'Lil Nas X' },
-        { title: 'Power', artist: 'Kanye West' }
-      ],
-      '📚': [
-        { title: 'Lo-fi Study', artist: 'Lofi Girl' },
-        { title: 'River Flows In You', artist: 'Yiruma' },
-        { title: 'Nuvole Bianche', artist: 'Ludovico Einaudi' }
-      ],
-      '🎧': [
-        { title: 'Blinding Lights', artist: 'The Weeknd' },
+        /* ---------------- Song Suggester ---------------- */
+    const MOOD_SONG_MAP = {
+      happy: [
+        { title: 'Good as Hell', artist: 'Lizzo' },
         { title: 'Levitating', artist: 'Dua Lipa' },
-        { title: 'As It Was', artist: 'Harry Styles' }
+        { title: 'Happy', artist: 'Pharrell Williams' },
+        { title: 'Walking on Sunshine', artist: 'Katrina and the Waves' }
       ],
-      '☁': [
-        { title: 'Space Song', artist: 'Beach House' },
-        { title: 'Dreams', artist: 'Fleetwood Mac' },
-        { title: 'Golden Hour', artist: 'JVKE' }
+      study: [
+        { title: 'River Flows In You', artist: 'Yiruma' },
+        { title: 'Nuvole Bianche', artist: 'Ludovico Einaudi' },
+        { title: 'Saturn', artist: 'Sleeping At Last' },
+        { title: 'Comptine d un autre ete', artist: 'Yann Tiersen' }
       ],
-      '🌙': [
-        { title: 'Midnight City', artist: 'M83' },
-        { title: 'Talking to the Moon', artist: 'Bruno Mars' },
-        { title: 'Night Changes', artist: 'One Direction' }
+      energetic: [
+        { title: 'Believer', artist: 'Imagine Dragons' },
+        { title: 'Cant Hold Us', artist: 'Macklemore and Ryan Lewis' },
+        { title: 'Titanium', artist: 'David Guetta ft. Sia' },
+        { title: 'Stronger', artist: 'Kanye West' }
       ]
     };
 
-    const DEFAULT_SONGS = [
-      { title: 'Until I Found You', artist: 'Stephen Sanchez' },
-      { title: 'Clocks', artist: 'Coldplay' },
-      { title: 'Yellow', artist: 'Coldplay' }
-    ];
-
-    function suggestSongs(){
-      const input = document.getElementById('emoji-input');
+    function suggestSongs(mood){
       const list = document.getElementById('song-suggestions');
-      const raw = (input.value || '').trim();
+      const songs = MOOD_SONG_MAP[mood] || MOOD_SONG_MAP.study;
 
-      if (!raw){
-        list.innerHTML = `<div class="font-semibold text-[#7fa9d1]">Type at least one emoji mood first.</div>`;
-        return;
-      }
-
-      const picks = [];
-      for (const ch of Array.from(raw)){
-        if (EMOJI_SONG_MAP[ch]) picks.push(...EMOJI_SONG_MAP[ch]);
-      }
-
-      const unique = [];
-      const seen = new Set();
-      (picks.length ? picks : DEFAULT_SONGS).forEach((s) => {
-        const key = `${s.title}::${s.artist}`;
-        if (seen.has(key)) return;
-        seen.add(key);
-        unique.push(s);
-      });
-
-      const top = unique.slice(0, 5);
-      list.innerHTML = top.map((s) => {
+      list.innerHTML = songs.map((s) => {
         const q = encodeURIComponent(`${s.title} ${s.artist}`);
         return `
           <a href="https://www.youtube.com/results?search_query=${q}" target="_blank" rel="noopener noreferrer"
@@ -849,38 +765,6 @@
         `;
       }).join('');
     }
-
-    async function toggleAudio(type){
-      const audio = document.getElementById(`audio-${type}`);
-      const btn = document.getElementById(`btn-${type}`);
-
-      if (audio.paused){
-        try{
-          ['rain', 'fire', 'cafe', 'birds'].forEach((k) => {
-            if (k === type) return;
-            const otherAudio = document.getElementById(`audio-${k}`);
-            const otherBtn = document.getElementById(`btn-${k}`);
-            otherAudio.pause();
-            otherBtn.classList.remove('ring-4','ring-[#ffafcc]','bg-[#ffebf0]');
-          });
-
-          audio.volume = settings.volume/100;
-          await audio.play();
-          btn.classList.add('ring-4','ring-[#ffafcc]','bg-[#ffebf0]');
-          showMessage(`${type[0].toUpperCase()+type.slice(1)} vibes on 🎧`);
-        } catch (err) {
-          if (err && err.name === 'NotAllowedError') {
-            showMessage("Browser blocked audio. Click once on the page, then try again.");
-          } else {
-            showMessage("Audio source could not load right now. Try another vibe.");
-          }
-        }
-      } else {
-        audio.pause();
-        btn.classList.remove('ring-4','ring-[#ffafcc]','bg-[#ffebf0]');
-      }
-    }
-
     /* ---------------- Planner ---------------- */
     let planner = readJSON(K.planner, { date: todayKey(), items: [] });
 
@@ -1123,24 +1007,13 @@
 
       normalizePlanner();
 
-      setVolume(settings.volume);
-      document.getElementById('vol').value = settings.volume;
-
       updateTimerDisplay();
       updateTodayFocusUI();
-
-      ['rain', 'fire', 'cafe', 'birds'].forEach((k) => {
-        const a = document.getElementById(`audio-${k}`);
-        a.addEventListener('error', () => showMessage(`Could not load ${k} audio right now.`));
-      });
 
       document.getElementById('task-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') addTask();
       });
-
-      document.getElementById('emoji-input').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') suggestSongs();
-      });
+      suggestSongs('study');
 
       setTimeout(() => showMessage("Welcome back bestie 💖"), 700);
     };
