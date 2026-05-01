@@ -54,6 +54,14 @@
     .btn-blue:hover{ transform:translateY(-2px); }
     .btn-blue:active{ transform:translateY(2px); border-bottom-width:2px; }
   </style>
+  <!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-756RQ4T4D0"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-756RQ4T4D0');
+</script>
 </head>
 
 <body class="flex items-center justify-center min-h-screen p-4">
@@ -348,34 +356,96 @@
       }
       return true;
     }
-
     function handleLogin(){
-      const emailOrPhone = document.getElementById('email').value.trim();
-      const password = document.getElementById('password').value;
+  const emailOrPhone = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
 
-      if (!emailOrPhone || !password){
-        showAuthPopup('Missing details', 'Please enter your email/phone and password.');
-        return;
-      }
+  const MAX_ATTEMPTS = 3;
+  const LOCK_TIME = 60 * 1000;
 
-      if (!validateLoginKey(emailOrPhone)){
-        return; // message shown inside validator
-      }
+  let attempts = JSON.parse(localStorage.getItem("studyBestie_loginAttempts") || '{"count":0,"lockedUntil":0}');
 
-      // remember user
-      if (document.getElementById('rememberMe').checked){
-        localStorage.setItem('studyBestie_lastLogin', emailOrPhone);
-      } else {
-        localStorage.removeItem('studyBestie_lastLogin');
-      }
+  if (Date.now() < attempts.lockedUntil) {
+    showAuthPopup("Too many attempts", "Please wait 1 minute before trying again.");
+    return;
+  }
 
-      // call your auth.js login()
-      try {
-        login();
-      } catch (err) {
-        showAuthPopup('Login error', 'Login failed because auth.js did not load. Check js/auth.js path.');
-      }
+  if (!emailOrPhone || !password){
+    showAuthPopup('Missing details', 'Please enter your email/phone and password.');
+    return;
+  }
+
+  if (!validateLoginKey(emailOrPhone)){
+    return;
+  }
+
+  const accounts = JSON.parse(localStorage.getItem('studyBestie_accounts') || '[]');
+  const key = normalizeKey(emailOrPhone);
+
+  const user = accounts.find(a =>
+    (a.email && normalizeKey(a.email) === key) ||
+    (a.phone && normalizeKey(a.phone) === key)
+  );
+
+  if (!user || user.password !== password) {
+    attempts.count++;
+
+    if (attempts.count >= MAX_ATTEMPTS) {
+      attempts.lockedUntil = Date.now() + LOCK_TIME;
+      attempts.count = 0;
+      showAuthPopup("Account locked", "Too many wrong login attempts. Try again in 1 minute.");
+    } else {
+      showAuthPopup("Wrong login", `Attempt ${attempts.count}/3. Please try again.`);
     }
+
+    localStorage.setItem("studyBestie_loginAttempts", JSON.stringify(attempts));
+    return;
+  }
+
+  localStorage.removeItem("studyBestie_loginAttempts");
+
+  if (document.getElementById('rememberMe').checked){
+    localStorage.setItem('studyBestie_lastLogin', emailOrPhone);
+  } else {
+    localStorage.removeItem('studyBestie_lastLogin');
+  }
+
+  localStorage.setItem('studyBestie_session', JSON.stringify({
+    name: user.name,
+    email: user.email,
+    phone: user.phone
+  }));
+
+  window.location.href = "dashboard.html";
+}
+
+    // function handleLogin(){
+    //   const emailOrPhone = document.getElementById('email').value.trim();
+    //   const password = document.getElementById('password').value;
+
+    //   if (!emailOrPhone || !password){
+    //     showAuthPopup('Missing details', 'Please enter your email/phone and password.');
+    //     return;
+    //   }
+
+    //   if (!validateLoginKey(emailOrPhone)){
+    //     return; // message shown inside validator
+    //   }
+
+    //   // remember user
+    //   if (document.getElementById('rememberMe').checked){
+    //     localStorage.setItem('studyBestie_lastLogin', emailOrPhone);
+    //   } else {
+    //     localStorage.removeItem('studyBestie_lastLogin');
+    //   }
+
+    //   // call your auth.js login()
+    //   try {
+    //     login();
+    //   } catch (err) {
+    //     showAuthPopup('Login error', 'Login failed because auth.js did not load. Check js/auth.js path.');
+    //   }
+    // }
 
     window.showAuthPopup = showAuthPopup;
   </script>
